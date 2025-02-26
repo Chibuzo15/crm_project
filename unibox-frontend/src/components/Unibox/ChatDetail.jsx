@@ -1,14 +1,9 @@
-// File: src/components/Unibox/ChatDetail.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import ChatHeader from "./ChatHeader";
-import {
-  fetchMessages,
-  markMessagesAsRead,
-} from "../../redux/actions/messageActions";
-import "./ChatDetail.css";
+import { fetchMessages, markMessagesAsRead } from "../../store/messageSlice";
 
 const ChatDetail = ({ chat, onSendMessage }) => {
   const dispatch = useDispatch();
@@ -64,19 +59,30 @@ const ChatDetail = ({ chat, onSendMessage }) => {
 
   if (!chat) {
     return (
-      <div className="chat-detail empty">Select a chat to start messaging</div>
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="text-center p-6">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Select a chat to start messaging
+          </h3>
+          <p className="text-gray-500">
+            Or use the search and filters to find specific conversations
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="chat-detail">
+    <div className="flex-1 flex flex-col h-full">
       <ChatHeader chat={chat} />
 
-      <MessageList
-        messages={messages}
-        loading={loading}
-        messagesEndRef={messagesEndRef}
-      />
+      <div className="flex-1 overflow-hidden bg-gray-50">
+        <MessageList
+          messages={messages}
+          loading={loading}
+          messagesEndRef={messagesEndRef}
+        />
+      </div>
 
       <MessageInput
         onSendMessage={handleSendMessage}

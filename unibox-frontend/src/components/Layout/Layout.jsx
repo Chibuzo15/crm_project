@@ -1,9 +1,7 @@
-// File: src/components/Layout/Layout.jsx
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import "./Layout.css";
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -13,16 +11,18 @@ const Layout = () => {
   };
 
   return (
-    <div
-      className={`app-layout ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}
-    >
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
       <Sidebar collapsed={sidebarCollapsed} />
 
-      <div className="main-container">
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
         <Header onMenuToggle={toggleSidebar} />
 
-        <main className="content-area">
-          <Outlet />
+        <main className="flex-1 overflow-auto bg-gray-50">
+          <div className="h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

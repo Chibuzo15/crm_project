@@ -1,17 +1,21 @@
-// File: src/components/Unibox/Unibox.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 import ChatList from "./ChatList";
 import ChatDetail from "./ChatDetail";
 import ChatSidebar from "./ChatSidebar";
-import Filters from "./Filters";
 import SearchBar from "./SearchBar";
-import { fetchChats, setCurrentChat } from "../../redux/actions/chatActions";
-import { fetchJobTypes } from "../../redux/actions/jobTypeActions";
-import { fetchPlatforms } from "../../redux/actions/platformActions";
-import "./Unibox.css";
+import Filters from "./Filters";
+import {
+  fetchChats,
+  setCurrentChat,
+  clearCurrentChat,
+  updateChatLastMessage,
+  addMessage,
+} from "../../store/chatSlice";
+import { fetchJobTypes } from "../../store/jobTypeSlice";
+import { fetchPlatforms } from "../../store/platformSlice";
 
 const Unibox = () => {
   const dispatch = useDispatch();
@@ -32,8 +36,7 @@ const Unibox = () => {
 
   // Connect to WebSocket
   useEffect(() => {
-    const SOCKET_URL =
-      process.env.REACT_APP_SOCKET_URL || "http://localhost:5000";
+    const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
     socketRef.current = io(SOCKET_URL, {
       query: { token },
@@ -46,20 +49,16 @@ const Unibox = () => {
     socketRef.current.on("new_message", (message) => {
       // Update the UI when receiving new messages
       if (currentChat && message.chat === currentChat._id) {
-        dispatch({
-          type: "ADD_MESSAGE",
-          payload: message,
-        });
+        dispatch(addMessage(message));
       }
 
       // Update chat list to show new message
-      dispatch({
-        type: "UPDATE_CHAT_LAST_MESSAGE",
-        payload: {
+      dispatch(
+        updateChatLastMessage({
           chatId: message.chat,
           message,
-        },
-      });
+        })
+      );
     });
 
     socketRef.current.on("disconnect", () => {
@@ -67,11 +66,11 @@ const Unibox = () => {
     });
 
     return () => {
-      socketRef.current.disconnect();
+      socketRef.current?.disconnect();
     };
   }, [token, currentChat, dispatch]);
 
-  // Load chats when component mounts
+  // Load chats when component mounts or filters change
   useEffect(() => {
     dispatch(fetchChats(filters));
     dispatch(fetchJobTypes());
@@ -84,10 +83,22 @@ const Unibox = () => {
       const chat = chats.find((chat) => chat._id === chatId);
       if (chat) {
         dispatch(setCurrentChat(chat));
+
+        // Join chat room via socket
+        socketRef.current?.emit("join_chat", chatId);
       } else {
         navigate("/unibox");
       }
+    } else if (!chatId) {
+      dispatch(clearCurrentChat());
     }
+
+    return () => {
+      // Leave chat room when component unmounts or chatId changes
+      if (chatId) {
+        socketRef.current?.emit("leave_chat", chatId);
+      }
+    };
   }, [chatId, chats, dispatch, navigate]);
 
   // Handle filter changes
@@ -124,33 +135,33 @@ const Unibox = () => {
     };
 
     // Emit message to socket server
-    socketRef.current.emit("send_message", message);
-
-    // Optimistically add message to the UI
-    dispatch({
-      type: "ADD_MESSAGE",
-      payload: {
-        ...message,
-        _id: Date.now().toString(), // Temporary ID
-        createdAt: new Date().toISOString(),
-      },
-    });
+    socketRef.current?.emit("send_message", message);
   };
 
   return (
-    <div className="unibox-container">
-      <div className="unibox-sidebar">
-        <SearchBar onSearch={handleSearch} />
-        <Filters filters={filters} onFilterChange={handleFilterChange} />
-        <ChatList
-          chats={chats}
-          loading={loading}
-          selectedChatId={currentChat?._id}
-          onChatSelect={handleChatSelect}
-        />
+    <div className="flex h-full">
+      {/* Chat List Sidebar */}
+      <div className="w-80 border-r border-gray-200 flex flex-col bg-white">
+        <div className="p-4">
+          <SearchBar onSearch={handleSearch} />
+        </div>
+
+        <div className="p-4 border-y border-gray-200">
+          <Filters filters={filters} onFilterChange={handleFilterChange} />
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <ChatList
+            chats={chats}
+            loading={loading}
+            selectedChatId={currentChat?._id}
+            onChatSelect={handleChatSelect}
+          />
+        </div>
       </div>
 
-      <div className="unibox-main">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex">
         {currentChat ? (
           <ChatDetail
             chat={currentChat}
@@ -158,27 +169,28 @@ const Unibox = () => {
             onSendMessage={sendMessage}
           />
         ) : (
-          <div className="no-chat-selected">
-            <h3>Select a chat to start messaging</h3>
-            <p>Or create a new chat from the sidebar</p>
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <div className="text-center p-6">
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                Select a chat to start messaging
+              </h3>
+              <p className="text-gray-500">
+                Or use the search and filters to find specific conversations
+              </p>
+            </div>
           </div>
         )}
-      </div>
 
-      {currentChat && (
-        <ChatSidebar
-          chat={currentChat}
-          onUpdate={(field, value) => {
-            dispatch({
-              type: "UPDATE_CURRENT_CHAT",
-              payload: {
-                _id: currentChat._id,
-                [field]: value,
-              },
-            });
-          }}
-        />
-      )}
+        {/* Chat Details Sidebar */}
+        {currentChat && (
+          <ChatSidebar
+            chat={currentChat}
+            onUpdate={(field, value) => {
+              // This is handled inside the ChatSidebar component with Redux actions
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

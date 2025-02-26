@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { updateChat } from "../../redux/actions/chatActions";
+import { updateChat } from "../../store/chatSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./ChatSidebar.css";
 
 const ChatSidebar = ({ chat, onUpdate }) => {
   const dispatch = useDispatch();
@@ -28,63 +27,98 @@ const ChatSidebar = ({ chat, onUpdate }) => {
 
   const handleNotesBlur = () => {
     if (notes !== chat.notes) {
-      dispatch(updateChat(chat._id, { notes }));
-      onUpdate("notes", notes);
+      dispatch(updateChat({ chatId: chat._id, updates: { notes } }))
+        .unwrap()
+        .then(() => onUpdate("notes", notes))
+        .catch((error) => console.error("Failed to update notes:", error));
     }
   };
 
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    dispatch(updateChat(chat._id, { status: newStatus }));
-    onUpdate("status", newStatus);
+
+    dispatch(updateChat({ chatId: chat._id, updates: { status: newStatus } }))
+      .unwrap()
+      .then(() => onUpdate("status", newStatus))
+      .catch((error) => console.error("Failed to update status:", error));
   };
 
   const handleJobTypeChange = (e) => {
     const newJobTypeId = e.target.value;
     setJobTypeId(newJobTypeId);
-    dispatch(updateChat(chat._id, { jobType: newJobTypeId }));
-    onUpdate("jobType", newJobTypeId);
+
+    dispatch(
+      updateChat({ chatId: chat._id, updates: { jobType: newJobTypeId } })
+    )
+      .unwrap()
+      .then(() => onUpdate("jobType", newJobTypeId))
+      .catch((error) => console.error("Failed to update job type:", error));
   };
 
   const handleFollowUpDateChange = (date) => {
     setFollowUpDate(date);
-    dispatch(updateChat(chat._id, { followUpDate: date }));
-    onUpdate("followUpDate", date);
+
+    dispatch(updateChat({ chatId: chat._id, updates: { followUpDate: date } }))
+      .unwrap()
+      .then(() => onUpdate("followUpDate", date))
+      .catch((error) =>
+        console.error("Failed to update follow-up date:", error)
+      );
   };
 
   const handleFollowUpIntervalChange = (e) => {
     const newInterval = parseInt(e.target.value, 10);
     setFollowUpInterval(newInterval);
-    dispatch(updateChat(chat._id, { followUpInterval: newInterval }));
-    onUpdate("followUpInterval", newInterval);
+
+    dispatch(
+      updateChat({
+        chatId: chat._id,
+        updates: { followUpInterval: newInterval },
+      })
+    )
+      .unwrap()
+      .then(() => onUpdate("followUpInterval", newInterval))
+      .catch((error) =>
+        console.error("Failed to update follow-up interval:", error)
+      );
   };
 
   return (
-    <div className="chat-sidebar">
-      <h3 className="sidebar-title">Chat Details</h3>
+    <div className="w-72 bg-gray-50 border-l border-gray-200 h-full overflow-y-auto p-4">
+      <h3 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200">
+        Chat Details
+      </h3>
 
-      <div className="sidebar-section">
-        <label>Platform</label>
-        <div className="field-value">{chat.platform?.name || "Unknown"}</div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Platform
+        </label>
+        <div className="bg-gray-100 px-3 py-2 rounded text-gray-700">
+          {chat.platform?.name || "Unknown"}
+        </div>
       </div>
 
-      <div className="sidebar-section">
-        <label>Account</label>
-        <div className="field-value">
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Account
+        </label>
+        <div className="bg-gray-100 px-3 py-2 rounded text-gray-700">
           {chat.platformAccount?.username || "Unknown"}
         </div>
       </div>
 
-      <div className="sidebar-section">
-        <label>Job Type</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Job Type
+        </label>
         <select
           value={jobTypeId}
           onChange={handleJobTypeChange}
-          className="form-select"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Job Type</option>
-          {jobTypes.map((type) => (
+          {jobTypes?.map((type) => (
             <option key={type._id} value={type._id}>
               {type.title}
             </option>
@@ -92,12 +126,14 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         </select>
       </div>
 
-      <div className="sidebar-section">
-        <label>Status</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Status
+        </label>
         <select
           value={status}
           onChange={handleStatusChange}
-          className="form-select"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="active">Active</option>
           <option value="to archive">To Archive</option>
@@ -107,22 +143,26 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         </select>
       </div>
 
-      <div className="sidebar-section">
-        <label>Follow Up Date</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Follow Up Date
+        </label>
         <DatePicker
           selected={followUpDate}
           onChange={handleFollowUpDateChange}
-          className="form-input"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           dateFormat="yyyy-MM-dd"
         />
       </div>
 
-      <div className="sidebar-section">
-        <label>Follow Up Interval (days)</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Follow Up Interval (days)
+        </label>
         <select
           value={followUpInterval}
           onChange={handleFollowUpIntervalChange}
-          className="form-select"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="1">1 day</option>
           <option value="2">2 days</option>
@@ -133,23 +173,30 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         </select>
       </div>
 
-      <div className="sidebar-section">
-        <label>Notes</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Notes
+        </label>
         <textarea
           value={notes}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
-          className="form-textarea"
+          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-24"
           placeholder="Add notes about this candidate..."
           rows={5}
         />
       </div>
 
       {chat.jobPosting && (
-        <div className="sidebar-section">
-          <label>Job Posting</label>
-          <div className="job-posting-link">
-            <a href={`/job-postings/${chat.jobPosting._id}`}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Job Posting
+          </label>
+          <div className="bg-gray-100 px-3 py-2 rounded">
+            <a
+              href={`/job-postings/${chat.jobPosting._id}`}
+              className="text-blue-500 hover:underline"
+            >
               {chat.jobPosting.title}
             </a>
           </div>

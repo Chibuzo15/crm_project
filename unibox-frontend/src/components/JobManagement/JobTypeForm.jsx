@@ -1,6 +1,4 @@
-// File: src/components/JobManagement/JobTypeForm.jsx
 import React, { useState } from "react";
-import "./JobTypeForm.css";
 
 const JobTypeForm = ({ jobType, onSubmit, onCancel }) => {
   const [title, setTitle] = useState(jobType?.title || "");
@@ -25,9 +23,14 @@ const JobTypeForm = ({ jobType, onSubmit, onCancel }) => {
   };
 
   return (
-    <form className="job-type-form" onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label htmlFor="title">Title *</label>
+    <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <label
+          htmlFor="title"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Title <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           id="title"
@@ -36,29 +39,47 @@ const JobTypeForm = ({ jobType, onSubmit, onCancel }) => {
             setTitle(e.target.value);
             setTitleError("");
           }}
-          className={`form-control ${titleError ? "error" : ""}`}
+          className={`w-full p-2 border rounded-md ${
+            titleError
+              ? "border-red-500 focus:ring-red-500"
+              : "border-gray-300 focus:ring-blue-500"
+          } focus:outline-none focus:ring-2 focus:border-transparent`}
           placeholder="e.g., Front-end Developer"
         />
-        {titleError && <div className="error-message">{titleError}</div>}
+        {titleError && (
+          <div className="mt-1 text-sm text-red-500">{titleError}</div>
+        )}
       </div>
 
-      <div className="form-group">
-        <label htmlFor="description">Description</label>
+      <div className="mb-6">
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Description
+        </label>
         <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="form-control"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Describe this job type..."
           rows={4}
         />
       </div>
 
-      <div className="form-actions">
-        <button type="button" className="cancel-button" onClick={onCancel}>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
           Cancel
         </button>
-        <button type="submit" className="submit-button">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
           {jobType ? "Update" : "Create"} Job Type
         </button>
       </div>

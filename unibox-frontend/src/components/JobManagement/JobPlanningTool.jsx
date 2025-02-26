@@ -1,12 +1,10 @@
-// File: src/components/JobManagement/JobPlanningTool.jsx
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchJobTypes } from "../../redux/actions/jobTypeActions";
-import { fetchPlatforms } from "../../redux/actions/platformActions";
-import { fetchPlatformAccounts } from "../../redux/actions/accountActions";
+import { fetchJobTypes } from "../../store/jobTypeSlice";
+import { fetchPlatforms } from "../../store/platformSlice";
+import { fetchPlatformAccounts } from "../../store/accountSlice";
 import JobTypeSelector from "./JobTypeSelector";
 import ActionPlanningSection from "./ActionPlanningSection";
-import "./JobPlanningTool.css";
 
 const JobPlanningTool = () => {
   const dispatch = useDispatch();
@@ -139,60 +137,77 @@ const JobPlanningTool = () => {
 
   const isLoading = jobTypesLoading || platformsLoading || accountsLoading;
 
-  if (isLoading) {
-    return <div className="loading-spinner">Loading...</div>;
-  }
-
   return (
-    <div className="job-planning-tool">
-      <h2>Job Planning Tool</h2>
+    <div className="p-6 bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        Job Planning Tool
+      </h2>
 
-      <div className="job-planning-section">
-        <h3>1. Select Job Type</h3>
-        <JobTypeSelector
-          jobTypes={jobTypes}
-          selectedJobType={selectedJobType}
-          onSelect={handleJobTypeSelect}
-        />
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">
+              1. Select Job Type
+            </h3>
+            <JobTypeSelector
+              jobTypes={jobTypes}
+              selectedJobType={selectedJobType}
+              onSelect={handleJobTypeSelect}
+            />
+          </div>
 
-        {selectedJobType && (
-          <>
-            <div className="job-title-section">
-              <h3>2. Job Title</h3>
-              <input
-                type="text"
-                className="job-title-input"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="Enter job title"
-              />
-            </div>
-
-            <div className="action-planning-section">
-              <h3>3. Action Planning</h3>
-
-              <ActionPlanningSection
-                platforms={platforms}
-                accounts={accounts}
-                actionPlan={actionPlan}
-                onJobPostingChange={handleJobPostingChange}
-                onAccountChange={handleAccountChange}
-                onScoutingChange={handleScoutingChange}
-              />
-
-              <div className="save-plan-section">
-                <button
-                  className="save-plan-button"
-                  onClick={handleSavePlan}
-                  disabled={!jobTitle}
-                >
-                  Save Plan
-                </button>
+          {selectedJobType && (
+            <>
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">
+                  2. Job Title
+                </h3>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="Enter job title"
+                />
               </div>
-            </div>
-          </>
-        )}
-      </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">
+                  3. Action Planning
+                </h3>
+
+                <ActionPlanningSection
+                  platforms={platforms}
+                  accounts={accounts}
+                  actionPlan={actionPlan}
+                  onJobPostingChange={handleJobPostingChange}
+                  onAccountChange={handleAccountChange}
+                  onScoutingChange={handleScoutingChange}
+                />
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    className={`px-6 py-2 rounded-md text-white font-medium
+                      ${
+                        !jobTitle
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      }`}
+                    onClick={handleSavePlan}
+                    disabled={!jobTitle}
+                  >
+                    Save Plan
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -37,19 +37,38 @@
 │   │   │   └── e95306cc231f980580b63d2add83a9e2e520d0
 │   │   ├── 08
 │   │   │   └── a3ac9e1e5c44ce374f782d7c4fa3aa70e4c1ff
+│   │   ├── 0a
+│   │   │   └── fe0045671973e9497d9d550f7d373c527bda89
 │   │   ├── 0c
+│   │   │   ├── 2bf93eca73faaa62985406b20e64e2554a205d
 │   │   │   ├── 589eccd4d48e270e161a1ab91baee5e5f4b4bc
 │   │   │   └── 5ff54eb0ba0fb0fa8d5daaafaa002492db954a
+│   │   ├── 0e
+│   │   │   └── d953ce76fd72708a88388b9fdbd31e584a1195
+│   │   ├── 0f
+│   │   │   └── 46f6b6e270d9c52a3c54047628e696289abd1c
+│   │   ├── 11
+│   │   │   └── 3f9103fafa530f4fe3eca9a5d54d9f3992fbe4
+│   │   ├── 19
+│   │   │   └── f2a8f8f98c7a4b6bc3713dc8ff1fe11978d8d3
 │   │   ├── 1a
 │   │   │   └── 0aa2915486a077021a7eb84ed80cb6a2f8e103
+│   │   ├── 1b
+│   │   │   └── 930fdf891c144b9ae5449550421b97311e92ee
 │   │   ├── 1d
 │   │   │   └── 10bebede5f7f9bdb43c7b9560b8df7a426468b
 │   │   ├── 1f
 │   │   │   └── 7c07af66b1e539dc2a320beb59a22c5cbf7bb2
+│   │   ├── 20
+│   │   │   └── 56c2de040a6c77ec75eeedc2a0267f5347b7c9
 │   │   ├── 23
 │   │   │   └── 8d2e4e6436b353404369d9a59fda5f1f980657
+│   │   ├── 26
+│   │   │   └── 221b5e749f5bd5fc8116aa3456a93ebb5cb24c
 │   │   ├── 27
 │   │   │   └── 5ba84c7b47ff72e6ff5b5e583db19d9f223760
+│   │   ├── 2a
+│   │   │   └── 888b61135c3d714a2502414ee9059e95a8014d
 │   │   ├── 2f
 │   │   │   └── 6d97166bb71df6ad84281f592bc6efe04dac42
 │   │   ├── 31
@@ -63,6 +82,8 @@
 │   │   │   └── 1c951cd1e54ec4f8da33ce1c46c3d7f62a86e5
 │   │   ├── 40
 │   │   │   └── 7d10fc79ab3db53aca4277a3eae17c0b5cc1c4
+│   │   ├── 45
+│   │   │   └── ef633e714cfb447bfaa3b41fe40db1e685e690
 │   │   ├── 46
 │   │   │   └── 2d1193a2fe915c2de4375b24ed644e1b4b866a
 │   │   ├── 4b
@@ -72,33 +93,83 @@
 │   │   │   └── e736c633c60665d725ed2019206798c379e651
 │   │   ├── 52
 │   │   │   └── 2507769899dd59e4c1115efb74e01679254092
+│   │   ├── 53
+│   │   │   └── dcb6d7b36a4c5e3363ec9ab9a922ee5e82c27c
 │   │   ├── 55
+│   │   │   ├── 17e41f64ab1ad7ba8f35e668be0d1e5e86e73c
 │   │   │   └── 7b37c44d5cb352ff331f90e7fba0189cdfa65e
+│   │   ├── 5b
+│   │   │   └── be7534e062c25de8b47136bc4ca1710f309ef8
+│   │   ├── 5c
+│   │   │   └── c54091914fabbef7a6a4b1e8c6a04bbcb39b28
 │   │   ├── 5e
 │   │   │   └── f7b891583a5ad8877af0c52c91ab44d0ebeaef
+│   │   ├── 63
+│   │   │   └── 8bb1df8e5949927d07162e36bdd70d51b6cd48
+│   │   ├── 68
+│   │   │   └── 8d3bde0abb3943e4f78d072dcd0b1c8d01f61b
 │   │   ├── 6c
 │   │   │   └── 87de9bb3358469122cc991d5cf578927246184
+│   │   ├── 6f
+│   │   │   ├── 2168d6216bcbe71d7b426ada60e568c1d77488
+│   │   │   └── 8e603078d2bc8a02fe9c877b167c3593bc1a9a
 │   │   ├── 70
 │   │   │   └── 603424c29a3809e51ea1fd085827929e4397a5
 │   │   ├── 71
 │   │   │   └── 270a9062596f1ce20e935f4280848d62657e4f
+│   │   ├── 74
+│   │   │   └── 3cbfcaacfd026ed4941a4650a53dadccedde22
+│   │   ├── 7a
+│   │   │   └── 7f0facebfefe822c64d11d3183ae319ca53e16
+│   │   ├── 7d
+│   │   │   └── 199cfa961160682f1e9611e9ab19959c21fd9b
+│   │   ├── 82
+│   │   │   └── f9b3475b12528852b474ff5bfbbc539d0dfa6b
 │   │   ├── 83
 │   │   │   └── 62fbac6579f09d94a9432ae111a05f741052cc
+│   │   ├── 84
+│   │   │   └── 686436e394cd45474716f302d3af56905ab846
 │   │   ├── 86
 │   │   │   └── 151c2063d1cc7a16a951c7600ea32a83e36936
+│   │   ├── 87
+│   │   │   └── 37442d46cb37668d8c3948c8cd270b6c002f68
+│   │   ├── 89
+│   │   │   └── 59018ea2e505113e05e986fdb0f8a762780f87
 │   │   ├── 8b
 │   │   │   └── 0f57b91aeb45c54467e29f983a0893dc83c4d9
+│   │   ├── 8d
+│   │   │   └── 1cdcd9a73345d243c7a2c34c07a58f29681bb6
 │   │   ├── 94
-│   │   │   └── c0b2fc152a086447a04f62793957235d2475be
+│   │   │   ├── c0b2fc152a086447a04f62793957235d2475be
+│   │   │   └── d28200919bf5e265066e5013a31ca9264ec43c
+│   │   ├── 95
+│   │   │   └── 46e459ba14810ed8636926f27f763e3abd4387
+│   │   ├── 97
+│   │   │   └── f8db5974e3f1f72dacd214c5690b11d5eeb58e
 │   │   ├── 99
 │   │   │   ├── 14e0b8c7d69ff0c5392de74c15a3b799d1e7d2
+│   │   │   ├── 6227ca5801f32d4bc4fb0aa07a201ceb449584
 │   │   │   └── ddc752d45ddf04511167eea59020ce99cd40d8
+│   │   ├── 9f
+│   │   │   └── 6deb83253433a213c6f05adab3c34669f8f59f
+│   │   ├── a4
+│   │   │   └── dc28f42c87daae05b282f7c6a2937d7fcd2e25
 │   │   ├── a5
+│   │   │   ├── 051f86677984514811c8a7b3fe89039445931e
 │   │   │   └── 47bf36d8d11a4f89c59c144f24795749086dd1
+│   │   ├── a6
+│   │   │   └── 2acf8018806a0fec5f77250c15521e0721c099
+│   │   ├── a7
+│   │   │   ├── 5e6370c50ddd3385d88d0e239e36f3f9ea0cd2
+│   │   │   └── ea41046bad16ead046ddbd3ba9eb2d426f6aed
 │   │   ├── a8
 │   │   │   └── 1878c19906b57689e449e26b5c80a282413eed
+│   │   ├── aa
+│   │   │   └── 9d90cfabe45d300f0ba4b21919b5e4eb403f87
 │   │   ├── ad
 │   │   │   └── b4fcef17283d6f6bcec4db9befd13b814ac64b
+│   │   ├── b2
+│   │   │   └── 47da10c3502d268afe5aa73b44caaa72fa4285
 │   │   ├── b3
 │   │   │   ├── 19229099a9e1b2ca498818e5fde0e7d9fc9724
 │   │   │   └── bbe30123b9104f4f14e2d16b9ba12faa9ec68c
@@ -115,16 +186,26 @@
 │   │   │   └── cbe12f08fabb147c8e141414e5e852bb94024f
 │   │   ├── bf
 │   │   │   └── bf8bc8d2923561581fe281d96efb954eacd270
+│   │   ├── c3
+│   │   │   └── 0cc87edd72476b17f0bec6e0290dde2e29c7c1
 │   │   ├── c5
 │   │   │   └── bee5abb7448af21410a53f168712be76494eec
 │   │   ├── cc
 │   │   │   └── f3f71b821d87bf61a2dba4567e37bc3e36cdb5
+│   │   ├── cf
+│   │   │   └── 40f4406a51b8b22175a995d97c5a6c70eab98f
 │   │   ├── d3
 │   │   │   └── 110d56015abed4ed2cc51ffc24325f85314506
 │   │   ├── d4
+│   │   │   ├── 0a4e50e8570d3d16977a0303c3ad26333c9d63
 │   │   │   └── e2f72847dc080bfb335c2f410248cb8d23c288
+│   │   ├── d5
+│   │   │   └── 2e5e22ceaacd73402b1991122747a1a836d0a5
+│   │   ├── d7
+│   │   │   └── 759a38e01bd495f7dcd61d61e632de86f180fd
 │   │   ├── d9
-│   │   │   └── 178aab2ecdfdb5c4ed21f7de6c2f3833fd1ad5
+│   │   │   ├── 178aab2ecdfdb5c4ed21f7de6c2f3833fd1ad5
+│   │   │   └── 37f7071a3291fc08bc19011e722deee2e32cc3
 │   │   ├── da
 │   │   │   └── c513b38326eb087ff47c29d833f7748b0099c1
 │   │   ├── e0
@@ -136,14 +217,31 @@
 │   │   │   └── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
 │   │   ├── e7
 │   │   │   └── b8dfb1b2a60bd50538bec9f876511b9cac21e3
+│   │   ├── e9
+│   │   │   └── bd9290f941d2fab68473fd50888cb6fdd4ec33
 │   │   ├── eb
 │   │   │   └── e6a1c5a03759951b76628de0d828cc02d7e08a
+│   │   ├── ee
+│   │   │   └── 164b1a309990d9a80c8f4f7555f8b68cf65e22
 │   │   ├── f0
 │   │   │   └── 6d5d9c8ca636d345c311c84b646945fe130588
+│   │   ├── f4
+│   │   │   └── 4bfde264d0b7cb58b1fea51296d62b36702d5a
 │   │   ├── f6
 │   │   │   └── 7355ae04c4000eef464262481f6b02daa50789
 │   │   ├── f7
 │   │   │   └── 68e33fc946e6074d6bd3ce5d454853adb3615e
+│   │   ├── f8
+│   │   │   └── d5c9a79196afa7d7c4e9ca4f3ff14350908664
+│   │   ├── fa
+│   │   │   └── e073f1c200d5c80886d57fef8a9ec82269b0cf
+│   │   ├── fb
+│   │   │   └── cf4314fef7a233d55a1d16dc84caf4c631340f
+│   │   ├── fc
+│   │   │   ├── 2f3feadafc717b509733a5cab3c5448ab19307
+│   │   │   └── 6c971edd42d91d1f235ec42141e35751b89a24
+│   │   ├── fe
+│   │   │   └── 7da203995efe35b171d3c1ded7cd4eaca5aa7c
 │   │   ├── info
 │   │   └── pack
 │   └── refs
@@ -180,6 +278,11 @@
 │   │   │   │   ├── DailyResultsChart.jsx
 │   │   │   │   ├── MetricsCards.jsx
 │   │   │   │   └── UserPerformanceChart.jsx
+│   │   │   ├── Auth
+│   │   │   │   ├── Login.jsx
+│   │   │   │   └── ProtectedRoute.jsx
+│   │   │   ├── Common
+│   │   │   │   └── NotFound.jsx
 │   │   │   ├── JobManagement
 │   │   │   │   ├── ActionPlanningSection.jsx
 │   │   │   │   ├── JobPlanningTool.jsx
@@ -204,21 +307,33 @@
 │   │   │       ├── ChatList.jsx
 │   │   │       ├── ChatListItem.jsx
 │   │   │       ├── ChatSidebar.jsx
+│   │   │       ├── Filters.jsx
 │   │   │       ├── Message.jsx
 │   │   │       ├── MessageInput.jsx
 │   │   │       ├── MessageList.jsx
+│   │   │       ├── SearchBar.jsx
 │   │   │       └── Unibox.jsx
 │   │   ├── index.css
-│   │   └── main.jsx
+│   │   ├── main.jsx
+│   │   └── store
+│   │       ├── authSlice.js
+│   │       ├── chatSlice.js
+│   │       └── index.js
 │   ├── vite.config.js
 │   └── yarn.lock
 └── unibox_backend
     ├── .env
     ├── .gitignore
     ├── controllers
+    │   ├── analytics.controller.js
     │   ├── auth.controller.js
     │   ├── chat.controller.js
-    │   └── message.controller.js
+    │   ├── jobPosting.controller.js
+    │   ├── jobType.controller.js
+    │   ├── message.controller.js
+    │   ├── platform.controller.js
+    │   ├── platformAccount.controller.js
+    │   └── user.controller.js
     ├── middleware
     │   ├── auth.middleware.js
     │   ├── upload.js
@@ -235,14 +350,19 @@
     │   └── index.js
     ├── package.json
     ├── routes
+    │   ├── account.routes.js
     │   ├── analytics.routes.js
     │   ├── auth.routes.js
     │   ├── chat.routes.js
     │   ├── jobPosting.routes.js
     │   ├── jobType.routes.js
     │   ├── message.routes.js
+    │   ├── platform.routes.js
     │   └── user.routes.js
     ├── server.js
     ├── socket
     │   └── socketHandler.js
+    ├── utils
+    │   ├── apiUtils.js
+    │   └── dateUtils.js
     └── yarn.lock
