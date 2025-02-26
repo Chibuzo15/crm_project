@@ -1,12 +1,11 @@
-// File: src/components/Platforms/PlatformAccountItem.jsx
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   updatePlatformAccount,
   deletePlatformAccount,
-} from "../../redux/actions/accountActions";
-import { formatDate } from "../../utils/dateUtils";
-import "./PlatformAccountItem.css";
+  syncAccount,
+} from "../../store/accountSlice";
+import { format } from "date-fns";
 
 const PlatformAccountItem = ({ account, platform }) => {
   const dispatch = useDispatch();
@@ -17,10 +16,12 @@ const PlatformAccountItem = ({ account, platform }) => {
 
   const handleToggleActive = () => {
     dispatch(
-      updatePlatformAccount(account._id, {
-        active: !account.active,
+      updatePlatformAccount({
+        accountId: account._id,
+        updates: { active: !account.active },
       })
     );
+    setShowOptions(false);
   };
 
   const handleEdit = () => {
@@ -40,12 +41,18 @@ const PlatformAccountItem = ({ account, platform }) => {
   };
 
   const handleSaveEdit = () => {
+    const updates = { username };
+    if (password) {
+      updates.password = password;
+    }
+
     dispatch(
-      updatePlatformAccount(account._id, {
-        username,
-        ...(password ? { password } : {}),
+      updatePlatformAccount({
+        accountId: account._id,
+        updates,
       })
     );
+
     setIsEditing(false);
   };
 
@@ -53,6 +60,10 @@ const PlatformAccountItem = ({ account, platform }) => {
     setUsername(account.username);
     setPassword("");
     setIsEditing(false);
+  };
+
+  const handleSyncNow = () => {
+    dispatch(syncAccount(account._id));
   };
 
   const toggleOptions = () => {
@@ -64,91 +75,144 @@ const PlatformAccountItem = ({ account, platform }) => {
 
   return (
     <div
-      className={`platform-account-item ${!account.active ? "inactive" : ""}`}
+      className={`border rounded-lg overflow-hidden shadow-sm ${
+        !account.active ? "bg-gray-50" : "bg-white"
+      }`}
     >
       {isEditing ? (
-        <div className="edit-form">
-          <div className="form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="form-control"
-            />
-          </div>
+        <div className="p-4">
+          <h4 className="font-medium text-gray-800 mb-3">Edit Account</h4>
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Leave blank to keep current"
-              className="form-control"
-            />
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
 
-          <div className="form-actions">
-            <button className="cancel-button" onClick={handleCancelEdit}>
-              Cancel
-            </button>
-            <button className="save-button" onClick={handleSaveEdit}>
-              Save
-            </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Leave blank to keep current"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={handleSaveEdit}
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       ) : (
         <>
-          <div className="account-header">
-            <h4 className="account-username">{account.username}</h4>
-            <button className="options-button" onClick={toggleOptions}>
-              ⋮
-            </button>
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium text-gray-900">{account.username}</h4>
 
-            {showOptions && (
-              <div className="account-options">
-                <div className="option" onClick={handleEdit}>
-                  Edit
-                </div>
-                <div className="option" onClick={handleToggleActive}>
-                  {account.active ? "Deactivate" : "Activate"}
-                </div>
-                <div className="option delete" onClick={handleDelete}>
-                  Delete
-                </div>
+              <div className="relative">
+                <button
+                  className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  onClick={toggleOptions}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    />
+                  </svg>
+                </button>
+
+                {showOptions && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <div className="py-1">
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={handleEdit}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={handleToggleActive}
+                      >
+                        {account.active ? "Deactivate" : "Activate"}
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="account-info">
-            <div className="info-item">
-              <span className="label">Status:</span>
-              <span
-                className={`value status-${
-                  account.active ? "active" : "inactive"
-                }`}
-              >
-                {account.active ? "Active" : "Inactive"}
-              </span>
-            </div>
+          <div className="p-4">
+            <div className="grid grid-cols-2 gap-y-2 text-sm">
+              <div className="text-gray-500">Status:</div>
+              <div className="text-right">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    account.active
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-200 text-gray-800"
+                  }`}
+                >
+                  {account.active ? "Active" : "Inactive"}
+                </span>
+              </div>
 
-            <div className="info-item">
-              <span className="label">Chats:</span>
-              <span className="value">{chatCount}</span>
-            </div>
+              <div className="text-gray-500">Chats:</div>
+              <div className="text-right font-medium">{chatCount}</div>
 
-            <div className="info-item">
-              <span className="label">Last Sync:</span>
-              <span className="value">
+              <div className="text-gray-500">Last Sync:</div>
+              <div className="text-right">
                 {account.lastSync
-                  ? formatDate(account.lastSync, "MMM d, yyyy")
+                  ? format(new Date(account.lastSync), "MMM d, yyyy")
                   : "Never"}
-              </span>
+              </div>
             </div>
-          </div>
 
-          <button className="sync-button">Sync Now</button>
+            <button
+              className="w-full mt-4 px-4 py-2 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 focus:outline-none"
+              onClick={handleSyncNow}
+            >
+              Sync Now
+            </button>
+          </div>
         </>
       )}
     </div>
