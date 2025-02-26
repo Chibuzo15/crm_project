@@ -1,0 +1,248 @@
+├── .git
+│   ├── COMMIT_EDITMSG
+│   ├── FETCH_HEAD
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   └── main
+│   │       └── remotes
+│   │           └── origin
+│   │               └── main
+│   ├── objects
+│   │   ├── 06
+│   │   │   ├── 764631e86970b1e6f7a78ebfe998aba9a289cc
+│   │   │   └── f5aeceafc6fd421d0d7e07953db10c187ba42f
+│   │   ├── 07
+│   │   │   └── e95306cc231f980580b63d2add83a9e2e520d0
+│   │   ├── 08
+│   │   │   └── a3ac9e1e5c44ce374f782d7c4fa3aa70e4c1ff
+│   │   ├── 0c
+│   │   │   ├── 589eccd4d48e270e161a1ab91baee5e5f4b4bc
+│   │   │   └── 5ff54eb0ba0fb0fa8d5daaafaa002492db954a
+│   │   ├── 1a
+│   │   │   └── 0aa2915486a077021a7eb84ed80cb6a2f8e103
+│   │   ├── 1d
+│   │   │   └── 10bebede5f7f9bdb43c7b9560b8df7a426468b
+│   │   ├── 1f
+│   │   │   └── 7c07af66b1e539dc2a320beb59a22c5cbf7bb2
+│   │   ├── 23
+│   │   │   └── 8d2e4e6436b353404369d9a59fda5f1f980657
+│   │   ├── 27
+│   │   │   └── 5ba84c7b47ff72e6ff5b5e583db19d9f223760
+│   │   ├── 2f
+│   │   │   └── 6d97166bb71df6ad84281f592bc6efe04dac42
+│   │   ├── 31
+│   │   │   └── 900c3838569dd4c4fd6474955b6c216f9f04d7
+│   │   ├── 33
+│   │   │   └── ffead104d9f7df0a090e5ffbd7d264bbe2e2ca
+│   │   ├── 3b
+│   │   │   ├── 1a85235814b6d44282d7fbab26f2686fd3f721
+│   │   │   └── c55e7da555d2bd517c237a7e98054cc2dd7d93
+│   │   ├── 3f
+│   │   │   └── 1c951cd1e54ec4f8da33ce1c46c3d7f62a86e5
+│   │   ├── 40
+│   │   │   └── 7d10fc79ab3db53aca4277a3eae17c0b5cc1c4
+│   │   ├── 46
+│   │   │   └── 2d1193a2fe915c2de4375b24ed644e1b4b866a
+│   │   ├── 4b
+│   │   │   └── 8475f322f0cc543bd7d55f1c310d4d040dbe7d
+│   │   ├── 4f
+│   │   │   ├── 0325c40e86739c0f11ff0b09897828cdf140aa
+│   │   │   └── e736c633c60665d725ed2019206798c379e651
+│   │   ├── 52
+│   │   │   └── 2507769899dd59e4c1115efb74e01679254092
+│   │   ├── 55
+│   │   │   └── 7b37c44d5cb352ff331f90e7fba0189cdfa65e
+│   │   ├── 5e
+│   │   │   └── f7b891583a5ad8877af0c52c91ab44d0ebeaef
+│   │   ├── 6c
+│   │   │   └── 87de9bb3358469122cc991d5cf578927246184
+│   │   ├── 70
+│   │   │   └── 603424c29a3809e51ea1fd085827929e4397a5
+│   │   ├── 71
+│   │   │   └── 270a9062596f1ce20e935f4280848d62657e4f
+│   │   ├── 83
+│   │   │   └── 62fbac6579f09d94a9432ae111a05f741052cc
+│   │   ├── 86
+│   │   │   └── 151c2063d1cc7a16a951c7600ea32a83e36936
+│   │   ├── 8b
+│   │   │   └── 0f57b91aeb45c54467e29f983a0893dc83c4d9
+│   │   ├── 94
+│   │   │   └── c0b2fc152a086447a04f62793957235d2475be
+│   │   ├── 99
+│   │   │   ├── 14e0b8c7d69ff0c5392de74c15a3b799d1e7d2
+│   │   │   └── ddc752d45ddf04511167eea59020ce99cd40d8
+│   │   ├── a5
+│   │   │   └── 47bf36d8d11a4f89c59c144f24795749086dd1
+│   │   ├── a8
+│   │   │   └── 1878c19906b57689e449e26b5c80a282413eed
+│   │   ├── ad
+│   │   │   └── b4fcef17283d6f6bcec4db9befd13b814ac64b
+│   │   ├── b3
+│   │   │   ├── 19229099a9e1b2ca498818e5fde0e7d9fc9724
+│   │   │   └── bbe30123b9104f4f14e2d16b9ba12faa9ec68c
+│   │   ├── b4
+│   │   │   └── 50f95b6ada2e1689be9b42b755cef9c47aae88
+│   │   ├── b5
+│   │   │   └── 12c09d476623ff4bf8d0d63c29b784925dbdf8
+│   │   ├── b7
+│   │   │   └── 1b4c33e79c685f7bbdbd633a08648633128e7d
+│   │   ├── b9
+│   │   │   ├── a1a6deac8775b5598874b2bc3c7971d82cf211
+│   │   │   └── d355df2a5956b526c004531b7b0ffe412461e0
+│   │   ├── bb
+│   │   │   └── cbe12f08fabb147c8e141414e5e852bb94024f
+│   │   ├── bf
+│   │   │   └── bf8bc8d2923561581fe281d96efb954eacd270
+│   │   ├── c5
+│   │   │   └── bee5abb7448af21410a53f168712be76494eec
+│   │   ├── cc
+│   │   │   └── f3f71b821d87bf61a2dba4567e37bc3e36cdb5
+│   │   ├── d3
+│   │   │   └── 110d56015abed4ed2cc51ffc24325f85314506
+│   │   ├── d4
+│   │   │   └── e2f72847dc080bfb335c2f410248cb8d23c288
+│   │   ├── d9
+│   │   │   └── 178aab2ecdfdb5c4ed21f7de6c2f3833fd1ad5
+│   │   ├── da
+│   │   │   └── c513b38326eb087ff47c29d833f7748b0099c1
+│   │   ├── e0
+│   │   │   └── 4ceb508867edd7713dac5ea56b7427253a8462
+│   │   ├── e5
+│   │   │   ├── 0577521957b0db4aa0f0ffe5e33f870d788c37
+│   │   │   └── f08eafcd7bc00e8ca820b38df8b141f64e6756
+│   │   ├── e6
+│   │   │   └── 9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+│   │   ├── e7
+│   │   │   └── b8dfb1b2a60bd50538bec9f876511b9cac21e3
+│   │   ├── eb
+│   │   │   └── e6a1c5a03759951b76628de0d828cc02d7e08a
+│   │   ├── f0
+│   │   │   └── 6d5d9c8ca636d345c311c84b646945fe130588
+│   │   ├── f6
+│   │   │   └── 7355ae04c4000eef464262481f6b02daa50789
+│   │   ├── f7
+│   │   │   └── 68e33fc946e6074d6bd3ce5d454853adb3615e
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       │   └── main
+│       ├── remotes
+│       │   └── origin
+│       │       └── main
+│       └── tags
+├── README.md
+├── project-structure.txt
+├── tree.py
+├── unibox-frontend
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── project-structure.txt
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── Admin
+│   │   │   │   ├── UserForm.jsx
+│   │   │   │   ├── UserList.jsx
+│   │   │   │   └── UserManagement.jsx
+│   │   │   ├── Analytics
+│   │   │   │   ├── ActivityDashboard.jsx
+│   │   │   │   ├── DailyResultsChart.jsx
+│   │   │   │   ├── MetricsCards.jsx
+│   │   │   │   └── UserPerformanceChart.jsx
+│   │   │   ├── JobManagement
+│   │   │   │   ├── ActionPlanningSection.jsx
+│   │   │   │   ├── JobPlanningTool.jsx
+│   │   │   │   ├── JobPostingPlatform.jsx
+│   │   │   │   ├── JobTypeForm.jsx
+│   │   │   │   ├── JobTypeSelector.jsx
+│   │   │   │   └── ScoutingPlatform.jsx
+│   │   │   ├── Layout
+│   │   │   │   ├── Header.jsx
+│   │   │   │   ├── Layout.jsx
+│   │   │   │   └── Sidebar.jsx
+│   │   │   ├── Platforms
+│   │   │   │   ├── JobProposalItem.jsx
+│   │   │   │   ├── NewAccountButton.jsx
+│   │   │   │   ├── PlatformAccountItem.jsx
+│   │   │   │   ├── PlatformAccountsList.jsx
+│   │   │   │   └── UpworkJobProposals.jsx
+│   │   │   └── Unibox
+│   │   │       ├── AttachmentPreview.jsx
+│   │   │       ├── ChatDetail.jsx
+│   │   │       ├── ChatHeader.jsx
+│   │   │       ├── ChatList.jsx
+│   │   │       ├── ChatListItem.jsx
+│   │   │       ├── ChatSidebar.jsx
+│   │   │       ├── Message.jsx
+│   │   │       ├── MessageInput.jsx
+│   │   │       ├── MessageList.jsx
+│   │   │       └── Unibox.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── vite.config.js
+│   └── yarn.lock
+└── unibox_backend
+    ├── .env
+    ├── .gitignore
+    ├── controllers
+    │   ├── auth.controller.js
+    │   ├── chat.controller.js
+    │   └── message.controller.js
+    ├── middleware
+    │   ├── auth.middleware.js
+    │   ├── upload.js
+    │   └── validators.js
+    ├── models
+    │   ├── Chat.js
+    │   ├── JobPosting.js
+    │   ├── JobType.js
+    │   ├── Message.js
+    │   ├── Platform.js
+    │   ├── PlatformAccount.js
+    │   ├── User.js
+    │   ├── UserActivity.js
+    │   └── index.js
+    ├── package.json
+    ├── routes
+    │   ├── analytics.routes.js
+    │   ├── auth.routes.js
+    │   ├── chat.routes.js
+    │   ├── jobPosting.routes.js
+    │   ├── jobType.routes.js
+    │   ├── message.routes.js
+    │   └── user.routes.js
+    ├── server.js
+    ├── socket
+    │   └── socketHandler.js
+    └── yarn.lock
