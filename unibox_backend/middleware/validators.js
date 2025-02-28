@@ -117,9 +117,9 @@ exports.validateJobType = [
 
 // Validation for job posting
 exports.validateJobPosting = [
-  body("jobType").notEmpty().withMessage("Job type is required"),
-  body("platform").notEmpty().withMessage("Platform is required"),
-  body("platformAccount")
+  body("jobTypeId").notEmpty().withMessage("Job type is required"),
+  body("platformId").notEmpty().withMessage("Platform is required"),
+  body("platformAccountId")
     .notEmpty()
     .withMessage("Platform account is required"),
   body("title").notEmpty().withMessage("Title is required"),

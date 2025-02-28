@@ -10,16 +10,16 @@ const ActionPlanningSection = ({
   onAccountChange,
   onScoutingChange,
 }) => {
-  const jobPostingPlatforms = platforms.filter(
+  const jobPostingPlatforms = platforms?.filter(
     (p) => p.type === "job-posting" || p.type === "both"
   );
-  const scoutingPlatforms = platforms.filter(
+  const scoutingPlatforms = platforms?.filter(
     (p) => p.type === "scouting" || p.type === "both"
   );
 
   return (
     <div className="space-y-6">
-      {jobPostingPlatforms.length > 0 && (
+      {jobPostingPlatforms?.length > 0 && (
         <div>
           <h4 className="text-lg font-medium text-gray-800 mb-3">
             Job-Posting Platforms
@@ -59,7 +59,7 @@ const ActionPlanningSection = ({
         </div>
       )}
 
-      {scoutingPlatforms.length > 0 && (
+      {scoutingPlatforms?.length > 0 && (
         <div>
           <h4 className="text-lg font-medium text-gray-800 mb-3">
             Chatting / Scouting Platforms

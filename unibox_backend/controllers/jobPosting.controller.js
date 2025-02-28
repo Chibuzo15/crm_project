@@ -64,9 +64,9 @@ exports.getJobPostingById = async (req, res) => {
 exports.createJobPosting = async (req, res) => {
   try {
     const {
-      jobType,
-      platform,
-      platformAccount,
+      jobTypeId,
+      platformId,
+      platformAccountId,
       title,
       description,
       externalId,
@@ -79,9 +79,9 @@ exports.createJobPosting = async (req, res) => {
     } = req.body;
 
     const jobPosting = new JobPosting({
-      jobType,
-      platform,
-      platformAccount,
+      jobType: jobTypeId,
+      platform: platformId,
+      platformAccount: platformAccountId,
       title,
       description,
       externalId,

@@ -3,6 +3,8 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetCurrentUserQuery } from "../../store/api";
 
+import Layout from "../Layout/Layout";
+
 const ProtectedRoute = ({ requiredRole }) => {
   const { isAuthenticated, token } = useSelector((state) => state.auth);
 
@@ -29,7 +31,11 @@ const ProtectedRoute = ({ requiredRole }) => {
   }
 
   // If authentication successful, render the child routes
-  return <Outlet />;
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
 };
 
 export default ProtectedRoute;

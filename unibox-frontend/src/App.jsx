@@ -5,7 +5,9 @@ import store from "./store";
 function App() {
   return (
     <Provider store={store}>
-      <AppRoutes />
+      <main className="min-h-[100vh] w-[100vw]">
+        <AppRoutes />
+      </main>
     </Provider>
   );
 }

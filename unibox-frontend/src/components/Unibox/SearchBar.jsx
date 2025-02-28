@@ -27,9 +27,9 @@ const SearchBar = ({ onSearch }) => {
         className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
 
-      <div className="absolute w-[100px] h-[100px] inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <svg
-          className="w-[100px] h-[100px] text-gray-400"
+          className="w-8 h-8 text-gray-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

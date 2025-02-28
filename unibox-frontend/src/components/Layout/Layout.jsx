@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
-const Layout = () => {
+const Layout = (props) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -20,9 +19,7 @@ const Layout = () => {
         <Header onMenuToggle={toggleSidebar} />
 
         <main className="flex-1 overflow-auto bg-gray-50">
-          <div className="h-full">
-            <Outlet />
-          </div>
+          <div className="h-full">{props.children}</div>
         </main>
       </div>
     </div>

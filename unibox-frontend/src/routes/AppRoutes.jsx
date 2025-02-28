@@ -42,14 +42,7 @@ const AppRoutes = () => {
           element={isAuthenticated ? <Navigate to="/unibox" /> : <Login />}
         />
 
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/" element={<ProtectedRoute />}>
           <Route index element={<Navigate to="/unibox" />} />
 
           <Route path="unibox" element={<Unibox />} />

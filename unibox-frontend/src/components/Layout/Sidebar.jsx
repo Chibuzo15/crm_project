@@ -25,10 +25,10 @@ const Sidebar = ({ collapsed }) => {
     >
       <div className="h-16 flex items-center justify-center border-b border-gray-700">
         <h1 className={`text-xl font-bold ${collapsed ? "hidden" : "block"}`}>
-          CRM Chat
+          Unibox
         </h1>
-        <h1 className={`text-xl font-bold ${collapsed ? "block" : "hidden"}`}>
-          CRM
+        <h1 className={`text-md font-bold ${collapsed ? "block" : "hidden"}`}>
+          Uni
         </h1>
       </div>
 

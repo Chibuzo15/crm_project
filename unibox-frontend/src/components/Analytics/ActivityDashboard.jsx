@@ -9,10 +9,15 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const ActivityDashboard = () => {
   const dispatch = useDispatch();
-  const { userActivity, dailyResults, loading, error } = useSelector(
-    (state) => state.analytics
-  );
+  const {
+    userActivity: realUserActivity,
+    dailyResults,
+    loading,
+    error,
+  } = useSelector((state) => state.analytics);
   const users = useSelector((state) => state.user.users);
+
+  const userActivity = [];
 
   const [dateRange, setDateRange] = useState([
     new Date(new Date().setDate(new Date().getDate() - 30)), // 30 days ago
@@ -48,14 +53,16 @@ const ActivityDashboard = () => {
       };
     }
 
-    const totalMessages = userActivity.reduce(
-      (sum, day) => sum + day.totalMessages,
-      0
-    );
-    const onTimeMessages = userActivity.reduce(
-      (sum, day) => sum + day.messagesOnTime,
-      0
-    );
+    const totalMessages = 0;
+    //  userActivity?.reduce(
+    //   (sum, day) => sum + day.totalMessages,
+    //   0
+    // );
+    const onTimeMessages = 0;
+    // userActivity?.reduce(
+    //   (sum, day) => sum + day.messagesOnTime,
+    //   0
+    // );
     const onTimePercentage =
       totalMessages > 0
         ? Math.round((onTimeMessages / totalMessages) * 100)
@@ -82,7 +89,7 @@ const ActivityDashboard = () => {
   const metrics = calculateMetrics();
 
   return (
-    <div className="p-6">
+    <div className="p-6 ">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
         Activity Dashboard
       </h2>
@@ -115,7 +122,7 @@ const ActivityDashboard = () => {
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Users</option>
-              {users.map((user) => (
+              {users?.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.name}
                 </option>

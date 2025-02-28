@@ -75,10 +75,10 @@ exports.getAccountById = async (req, res) => {
 // Create a new platform account
 exports.createAccount = async (req, res) => {
   try {
-    const { platform, username, password } = req.body;
+    const { platformId, username, password } = req.body;
 
     // Check if platform exists
-    const platformExists = await Platform.findById(platform);
+    const platformExists = await Platform.findById(platformId);
 
     if (!platformExists) {
       return res.status(400).json({ message: "Platform not found" });
@@ -86,17 +86,16 @@ exports.createAccount = async (req, res) => {
 
     // Check if account with same username already exists for this platform
     const existingAccount = await PlatformAccount.findOne({
-      platform,
+      platform: platformId,
       username,
     });
 
+    console.log("existingAccount ", existingAccount);
+
     if (existingAccount) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Account with this username already exists for this platform",
-        });
+      return res.status(400).json({
+        message: "Account with this username already exists for this platform",
+      });
     }
 
     // Encrypt password
@@ -104,7 +103,7 @@ exports.createAccount = async (req, res) => {
     const encryptedPassword = await bcrypt.hash(password, salt);
 
     const account = new PlatformAccount({
-      platform,
+      platform: platformId,
       username,
       password: encryptedPassword,
       active: true,
@@ -154,12 +153,10 @@ exports.updateAccount = async (req, res) => {
       });
 
       if (existingAccount) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Account with this username already exists for this platform",
-          });
+        return res.status(400).json({
+          message:
+            "Account with this username already exists for this platform",
+        });
       }
     }
 

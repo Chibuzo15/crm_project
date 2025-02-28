@@ -201,7 +201,7 @@ const Unibox = () => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full ">
       {/* Chat List Sidebar */}
       <div
         className={`${
