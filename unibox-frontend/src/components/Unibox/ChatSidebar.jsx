@@ -1,13 +1,20 @@
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { updateChat } from "../../store/chatSlice";
+import { useSelector } from "react-redux";
+import {
+  useUpdateChatMutation,
+  useGetJobTypesQuery,
+  useGetPlatformsQuery,
+} from "../../store/api";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const ChatSidebar = ({ chat, onUpdate }) => {
-  const dispatch = useDispatch();
-  const { jobTypes } = useSelector((state) => state.jobType);
-  const { platforms } = useSelector((state) => state.platform);
+  // Use RTK Query hooks instead of using useSelector for these
+  const { data: jobTypes = [] } = useGetJobTypesQuery();
+  const { data: platforms = [] } = useGetPlatformsQuery();
+
+  // Use updateChat mutation instead of dispatch
+  const [updateChat, { isLoading: isUpdating }] = useUpdateChatMutation();
 
   const [notes, setNotes] = useState(chat.notes || "");
   const [status, setStatus] = useState(chat.status || "");
@@ -25,63 +32,82 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     setNotes(e.target.value);
   };
 
-  const handleNotesBlur = () => {
+  const handleNotesBlur = async () => {
     if (notes !== chat.notes) {
-      dispatch(updateChat({ chatId: chat._id, updates: { notes } }))
-        .unwrap()
-        .then(() => onUpdate("notes", notes))
-        .catch((error) => console.error("Failed to update notes:", error));
+      try {
+        await updateChat({
+          id: chat._id,
+          updates: { notes },
+        }).unwrap();
+
+        onUpdate("notes", notes);
+      } catch (error) {
+        console.error("Failed to update notes:", error);
+      }
     }
   };
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
 
-    dispatch(updateChat({ chatId: chat._id, updates: { status: newStatus } }))
-      .unwrap()
-      .then(() => onUpdate("status", newStatus))
-      .catch((error) => console.error("Failed to update status:", error));
+    try {
+      await updateChat({
+        id: chat._id,
+        updates: { status: newStatus },
+      }).unwrap();
+
+      onUpdate("status", newStatus);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
   };
 
-  const handleJobTypeChange = (e) => {
+  const handleJobTypeChange = async (e) => {
     const newJobTypeId = e.target.value;
     setJobTypeId(newJobTypeId);
 
-    dispatch(
-      updateChat({ chatId: chat._id, updates: { jobType: newJobTypeId } })
-    )
-      .unwrap()
-      .then(() => onUpdate("jobType", newJobTypeId))
-      .catch((error) => console.error("Failed to update job type:", error));
+    try {
+      await updateChat({
+        id: chat._id,
+        updates: { jobType: newJobTypeId },
+      }).unwrap();
+
+      onUpdate("jobType", newJobTypeId);
+    } catch (error) {
+      console.error("Failed to update job type:", error);
+    }
   };
 
-  const handleFollowUpDateChange = (date) => {
+  const handleFollowUpDateChange = async (date) => {
     setFollowUpDate(date);
 
-    dispatch(updateChat({ chatId: chat._id, updates: { followUpDate: date } }))
-      .unwrap()
-      .then(() => onUpdate("followUpDate", date))
-      .catch((error) =>
-        console.error("Failed to update follow-up date:", error)
-      );
+    try {
+      await updateChat({
+        id: chat._id,
+        updates: { followUpDate: date },
+      }).unwrap();
+
+      onUpdate("followUpDate", date);
+    } catch (error) {
+      console.error("Failed to update follow-up date:", error);
+    }
   };
 
-  const handleFollowUpIntervalChange = (e) => {
+  const handleFollowUpIntervalChange = async (e) => {
     const newInterval = parseInt(e.target.value, 10);
     setFollowUpInterval(newInterval);
 
-    dispatch(
-      updateChat({
-        chatId: chat._id,
+    try {
+      await updateChat({
+        id: chat._id,
         updates: { followUpInterval: newInterval },
-      })
-    )
-      .unwrap()
-      .then(() => onUpdate("followUpInterval", newInterval))
-      .catch((error) =>
-        console.error("Failed to update follow-up interval:", error)
-      );
+      }).unwrap();
+
+      onUpdate("followUpInterval", newInterval);
+    } catch (error) {
+      console.error("Failed to update follow-up interval:", error);
+    }
   };
 
   return (
@@ -115,6 +141,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         <select
           value={jobTypeId}
           onChange={handleJobTypeChange}
+          disabled={isUpdating}
           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Job Type</option>
@@ -133,6 +160,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         <select
           value={status}
           onChange={handleStatusChange}
+          disabled={isUpdating}
           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="active">Active</option>
@@ -150,6 +178,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         <DatePicker
           selected={followUpDate}
           onChange={handleFollowUpDateChange}
+          disabled={isUpdating}
           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           dateFormat="yyyy-MM-dd"
         />
@@ -162,6 +191,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         <select
           value={followUpInterval}
           onChange={handleFollowUpIntervalChange}
+          disabled={isUpdating}
           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="1">1 day</option>
@@ -181,6 +211,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
           value={notes}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
+          disabled={isUpdating}
           className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-24"
           placeholder="Add notes about this candidate..."
           rows={5}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 // import { login, clearError } from "../../store/authSlice";
 
 import { useLoginMutation } from "../../store/api";
@@ -21,7 +21,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { isAuthenticated, loading, error } = useSelector(
+  const { isAuthenticated, loading, error, loginFormData } = useSelector(
     (state) => state.auth
   );
 

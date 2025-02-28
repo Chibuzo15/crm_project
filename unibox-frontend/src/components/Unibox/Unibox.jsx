@@ -1,64 +1,102 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import { useSelector, useDispatch } from "react-redux";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useGetChatsQuery,
+  useSendMessageMutation,
+  useGetChatByIdQuery,
+  useUpdateChatMutation,
+} from "../../store/api";
+import { setCurrentChat, clearCurrentChat } from "../../store/chatSlice";
 import ChatList from "./ChatList";
 import ChatDetail from "./ChatDetail";
-import ChatSidebar from "./ChatSidebar";
 import SearchBar from "./SearchBar";
 import Filters from "./Filters";
-import {
-  fetchChats,
-  setCurrentChat,
-  clearCurrentChat,
-  updateChatLastMessage,
-  addMessage,
-} from "../../store/chatSlice";
-import { fetchJobTypes } from "../../store/jobTypeSlice";
-import { fetchPlatforms } from "../../store/platformSlice";
+import ChatSidebar from "./ChatSidebar";
+import socket from "../../utils/socket";
 
 const Unibox = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const navigate = useNavigate();
   const { chatId } = useParams();
   const socketRef = useRef();
 
-  const { chats, currentChat, loading } = useSelector((state) => state.chat);
+  const { currentChat } = useSelector((state) => state.chat);
   const { user, token } = useSelector((state) => state.auth);
 
+  // State for chat filters and search
   const [filters, setFilters] = useState({
-    search: "",
     platform: "",
     jobType: "",
     status: "",
     followUp: false,
+    starred: false,
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+  // Use RTK Query hook for fetching chats with filters
+  const {
+    data: chats = [],
+    isLoading: isLoadingChats,
+    refetch: refetchChats,
+  } = useGetChatsQuery({
+    ...filters,
+    search: searchTerm,
   });
 
-  // Connect to WebSocket
+  // Get chat by ID if chatId is present
+  const { data: chatFromId, isLoading: isLoadingChatFromId } =
+    useGetChatByIdQuery(chatId, {
+      skip: !chatId,
+    });
+
+  // Send message mutation
+  const [sendMessage, { isLoading: isSendingMessage }] =
+    useSendMessageMutation();
+
+  // Update chat mutation
+  const [updateChat] = useUpdateChatMutation();
+
+  // Handle window resize
   useEffect(() => {
-    const SOCKET_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
 
-    socketRef.current = io(SOCKET_URL, {
-      query: { token },
-    });
-
-    socketRef.current.on("connect", () => {
-      console.log("Connected to socket server");
-    });
-
-    socketRef.current.on("new_message", (message) => {
-      // Update the UI when receiving new messages
-      if (currentChat && message.chat === currentChat._id) {
-        dispatch(addMessage(message));
+      // Auto-close sidebar on mobile if chat is selected
+      if (mobile && currentChat && sidebarOpen) {
+        setSidebarOpen(false);
       }
+    };
 
-      // Update chat list to show new message
-      dispatch(
-        updateChatLastMessage({
-          chatId: message.chat,
-          message,
-        })
-      );
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [currentChat, sidebarOpen]);
+
+  // Handle WebSocket connection
+  useEffect(() => {
+    socketRef.current = socket;
+
+    // Connect with authentication
+    socketRef.current.connect();
+
+    // Join user's room for all notifications
+    if (user && user._id) {
+      socketRef.current.emit("join", { userId: user._id });
+    }
+
+    // Listen for new messages and other events
+    socketRef.current.on("new_message", (message) => {
+      // Refetch chats to get the updated list with new messages
+      refetchChats();
+    });
+
+    socketRef.current.on("chat_updated", () => {
+      // Refetch chats when any chat is updated
+      refetchChats();
     });
 
     socketRef.current.on("disconnect", () => {
@@ -66,30 +104,18 @@ const Unibox = () => {
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      socketRef.current.disconnect();
     };
-  }, [token, currentChat, dispatch]);
+  }, [user, refetchChats]);
 
-  // Load chats when component mounts or filters change
+  // Set current chat when chatId changes
   useEffect(() => {
-    dispatch(fetchChats(filters));
-    dispatch(fetchJobTypes());
-    dispatch(fetchPlatforms());
-  }, [dispatch, filters]);
+    if (chatId && !isLoadingChatFromId && chatFromId) {
+      dispatch(setCurrentChat(chatFromId));
 
-  // Set current chat when chatId from URL changes
-  useEffect(() => {
-    if (chatId && chats.length > 0) {
-      const chat = chats.find((chat) => chat._id === chatId);
-      if (chat) {
-        dispatch(setCurrentChat(chat));
-
-        // Join chat room via socket
-        socketRef.current?.emit("join_chat", chatId);
-      } else {
-        navigate("/unibox");
-      }
-    } else if (!chatId) {
+      // Join chat room for real-time updates
+      socketRef.current?.emit("join_chat", chatId);
+    } else if (!chatId && currentChat) {
       dispatch(clearCurrentChat());
     }
 
@@ -99,51 +125,91 @@ const Unibox = () => {
         socketRef.current?.emit("leave_chat", chatId);
       }
     };
-  }, [chatId, chats, dispatch, navigate]);
+  }, [chatId, chatFromId, isLoadingChatFromId, dispatch, currentChat]);
 
   // Handle filter changes
   const handleFilterChange = (name, value) => {
-    setFilters({
-      ...filters,
+    setFilters((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
+  };
+
+  // Handle search
+  const handleSearch = (query) => {
+    setSearchTerm(query);
   };
 
   // Handle chat selection
   const handleChatSelect = (chat) => {
     navigate(`/unibox/${chat._id}`);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
-  // Handle search
-  const handleSearch = (query) => {
-    setFilters({
-      ...filters,
-      search: query,
+  // Handle sending a message
+  const handleSendMessage = async (content, attachments = []) => {
+    if (!currentChat) return;
+
+    try {
+      const messageData = {
+        chatId: currentChat._id,
+        content,
+        attachments,
+      };
+
+      await sendMessage(messageData).unwrap();
+
+      // Emit typing stopped event
+      socketRef.current?.emit("stop_typing", {
+        chatId: currentChat._id,
+        userId: user._id,
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  // Handle typing indication
+  const handleTyping = () => {
+    if (!currentChat) return;
+
+    socketRef.current?.emit("typing", {
+      chatId: currentChat._id,
+      userId: user._id,
     });
   };
 
-  // Send a message
-  const sendMessage = (content, attachments = []) => {
+  // Handle sidebar toggle
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle chat update from sidebar
+  const handleChatUpdate = async (field, value) => {
     if (!currentChat) return;
 
-    const message = {
-      content,
-      chat: currentChat._id,
-      isFromUs: true,
-      sender: user._id,
-      attachments,
-    };
-
-    // Emit message to socket server
-    socketRef.current?.emit("send_message", message);
+    try {
+      await updateChat({
+        id: currentChat._id,
+        [field]: value,
+      }).unwrap();
+    } catch (error) {
+      console.error(`Failed to update ${field}:`, error);
+    }
   };
 
   return (
     <div className="flex h-full">
       {/* Chat List Sidebar */}
-      <div className="w-80 border-r border-gray-200 flex flex-col bg-white">
+      <div
+        className={`${
+          isMobile ? (sidebarOpen ? "block" : "hidden") : "block"
+        } w-80 border-r border-gray-200 flex flex-col bg-white`}
+      >
         <div className="p-4">
-          <SearchBar onSearch={handleSearch} />
+          <SearchBar onSearch={handleSearch} value={searchTerm} />
         </div>
 
         <div className="p-4 border-y border-gray-200">
@@ -153,7 +219,7 @@ const Unibox = () => {
         <div className="flex-1 overflow-y-auto">
           <ChatList
             chats={chats}
-            loading={loading}
+            loading={isLoadingChats}
             selectedChatId={currentChat?._id}
             onChatSelect={handleChatSelect}
           />
@@ -166,7 +232,11 @@ const Unibox = () => {
           <ChatDetail
             chat={currentChat}
             socket={socketRef.current}
-            onSendMessage={sendMessage}
+            onSendMessage={handleSendMessage}
+            onTyping={handleTyping}
+            isLoading={isLoadingChatFromId}
+            isSending={isSendingMessage}
+            onToggleSidebar={toggleSidebar}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gray-50">
@@ -183,12 +253,13 @@ const Unibox = () => {
 
         {/* Chat Details Sidebar */}
         {currentChat && (
-          <ChatSidebar
-            chat={currentChat}
-            onUpdate={(field, value) => {
-              // This is handled inside the ChatSidebar component with Redux actions
-            }}
-          />
+          <div
+            className={`${
+              isMobile ? (sidebarOpen ? "hidden" : "block") : "block"
+            } w-64 border-l border-gray-200 bg-white`}
+          >
+            <ChatSidebar chat={currentChat} onUpdate={handleChatUpdate} />
+          </div>
         )}
       </div>
     </div>

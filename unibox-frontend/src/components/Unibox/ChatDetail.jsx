@@ -1,40 +1,68 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import ChatHeader from "./ChatHeader";
-import { fetchMessages, markMessagesAsRead } from "../../store/messageSlice";
+import {
+  useGetMessagesQuery,
+  useMarkMessagesAsReadMutation,
+  useSendMessageWithAttachmentMutation,
+} from "../../store/api";
 
-const ChatDetail = ({ chat, onSendMessage }) => {
-  const dispatch = useDispatch();
+const ChatDetail = ({ chat, onSendMessage, socket }) => {
   const messagesEndRef = useRef(null);
-  const { messages, loading } = useSelector((state) => state.message);
   const [attachments, setAttachments] = useState([]);
 
-  // Fetch messages when chat changes
-  useEffect(() => {
-    if (chat && chat._id) {
-      dispatch(fetchMessages(chat._id));
+  // Use RTK Query hooks instead of Redux actions
+  const { data: messages = [], isLoading: loading } = useGetMessagesQuery(
+    chat?._id,
+    {
+      skip: !chat?._id,
+      pollingInterval: 10000, // Poll for new messages every 10 seconds
     }
-  }, [chat, dispatch]);
+  );
+
+  // Mark messages as read mutation
+  const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
+
+  // Send message with attachment mutation
+  const [sendMessageWithAttachment] = useSendMessageWithAttachmentMutation();
 
   // Mark messages as read when viewed
   useEffect(() => {
     if (chat && chat._id && chat.unreadCount > 0) {
-      dispatch(markMessagesAsRead(chat._id));
+      markMessagesAsRead(chat._id);
     }
-  }, [chat, dispatch]);
+  }, [chat, markMessagesAsRead]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = (content) => {
+  const handleSendMessage = async (content) => {
     if (content.trim() === "" && attachments.length === 0) return;
 
-    onSendMessage(content, attachments);
-    setAttachments([]);
+    try {
+      if (attachments.length > 0) {
+        // If there are attachments, use the attachment endpoint
+        await sendMessageWithAttachment({
+          chatId: chat._id,
+          content,
+          attachments,
+        }).unwrap();
+      } else {
+        // For regular messages, use socket
+        socket.emit("send_message", {
+          chat: chat._id,
+          content,
+        });
+      }
+
+      // Clear attachments after sending
+      setAttachments([]);
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   const handleAttachmentAdd = (files) => {

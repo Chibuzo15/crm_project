@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // Base URL for API
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Create API with RTK Query
 export const api = createApi({
@@ -397,6 +397,124 @@ export const api = createApi({
         { type: "JobPosting", id: "LIST" },
       ],
     }),
+
+    // Chat endpoints
+    getChats: builder.query({
+      query: (params = {}) => ({
+        url: "/chats",
+        params,
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: "Chat", id: _id })),
+              { type: "Chat", id: "LIST" },
+            ]
+          : [{ type: "Chat", id: "LIST" }],
+    }),
+
+    getChatById: builder.query({
+      query: (id) => `/chats/${id}`,
+      providesTags: (result, error, id) => [{ type: "Chat", id }],
+    }),
+
+    createChat: builder.mutation({
+      query: (chatData) => ({
+        url: "/chats",
+        method: "POST",
+        body: chatData,
+      }),
+      invalidatesTags: [{ type: "Chat", id: "LIST" }],
+    }),
+
+    updateChat: builder.mutation({
+      query: ({ id, chatData }) => ({
+        url: `/chats/${id}`,
+        method: "PUT",
+        body: chatData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Chat", id },
+        { type: "Chat", id: "LIST" },
+      ],
+    }),
+
+    markChatAsRead: builder.mutation({
+      query: (id) => ({
+        url: `/chats/${id}/read`,
+        method: "PUT",
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: "Chat", id },
+        { type: "Chat", id: "LIST" },
+      ],
+    }),
+
+    starChat: builder.mutation({
+      query: (id) => ({
+        url: `/chats/${id}/star`,
+        method: "PUT",
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: "Chat", id },
+        { type: "Chat", id: "LIST" },
+      ],
+    }),
+
+    // Message endpoints
+    getMessages: builder.query({
+      query: (chatId) => `/chats/${chatId}/messages`,
+      providesTags: (result, error, chatId) => [
+        { type: "Message", id: `LIST-${chatId}` },
+      ],
+    }),
+
+    sendMessage: builder.mutation({
+      query: ({ chatId, content }) => ({
+        url: `/chats/${chatId}/messages`,
+        method: "POST",
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { chatId }) => [
+        { type: "Message", id: `LIST-${chatId}` },
+        { type: "Chat", id: chatId },
+      ],
+    }),
+
+    sendMessageWithAttachment: builder.mutation({
+      query: ({ chatId, content, attachments }) => {
+        const formData = new FormData();
+        formData.append("content", content);
+
+        if (attachments && attachments.length > 0) {
+          attachments.forEach((attachment) => {
+            if (attachment.file) {
+              formData.append("attachments", attachment.file);
+            }
+          });
+        }
+
+        return {
+          url: `/chats/${chatId}/messages/attachment`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: (result, error, { chatId }) => [
+        { type: "Message", id: `LIST-${chatId}` },
+        { type: "Chat", id: chatId },
+      ],
+    }),
+
+    markMessagesAsRead: builder.mutation({
+      query: (chatId) => ({
+        url: `/chats/${chatId}/messages/read`,
+        method: "PUT",
+      }),
+      invalidatesTags: (result, error, chatId) => [
+        { type: "Chat", id: chatId },
+      ],
+    }),
   }),
 });
 
@@ -449,4 +567,18 @@ export const {
   useGetJobPostingStatisticsQuery,
   useGetUpworkJobProposalsQuery,
   useSyncUpworkJobProposalMutation,
+
+  // Chat hooks
+  useGetChatsQuery,
+  useGetChatByIdQuery,
+  useCreateChatMutation,
+  useUpdateChatMutation,
+  useMarkChatAsReadMutation,
+  useStarChatMutation,
+
+  // Message hooks
+  useGetMessagesQuery,
+  useSendMessageMutation,
+  useSendMessageWithAttachmentMutation,
+  useMarkMessagesAsReadMutation,
 } = api;

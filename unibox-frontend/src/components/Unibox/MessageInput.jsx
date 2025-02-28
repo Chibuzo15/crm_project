@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import AttachmentPreview from "./AttachmentPreview";
 
 const MessageInput = ({
   onSendMessage,
@@ -8,16 +9,19 @@ const MessageInput = ({
 }) => {
   const [message, setMessage] = useState("");
   const fileInputRef = useRef(null);
+  const messageInputRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim() || attachments.length > 0) {
-      onSendMessage(message);
-      setMessage("");
-    }
+    if (message.trim() === "" && attachments.length === 0) return;
+
+    onSendMessage(message);
+    setMessage("");
+    messageInputRef.current?.focus();
   };
 
   const handleKeyDown = (e) => {
+    // Send message on Enter (without Shift)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
@@ -25,42 +29,55 @@ const MessageInput = ({
   };
 
   const handleAttachmentClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
+    if (e.target.files && e.target.files.length > 0) {
       onAttachmentAdd(e.target.files);
-      // Reset file input
+
+      // Reset the file input value so the same file can be selected again
       e.target.value = "";
     }
   };
 
   return (
-    <div className="border-t border-gray-200 bg-white px-4 py-3">
+    <div className="bg-white border-t border-gray-200 p-3">
+      {/* Attachment previews */}
       {attachments.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap gap-2">
           {attachments.map((attachment, index) => (
-            <div
-              key={index}
-              className="flex items-center bg-gray-100 px-3 py-1 rounded text-sm"
-            >
-              <span className="truncate max-w-[120px]">{attachment.name}</span>
+            <div key={index} className="relative">
+              <AttachmentPreview attachment={attachment} />
               <button
-                className="ml-2 text-gray-500 hover:text-gray-700"
+                type="button"
+                className="absolute -top-2 -right-2 bg-gray-100 rounded-full p-1 shadow-sm text-gray-500 hover:text-red-500"
                 onClick={() => onAttachmentRemove(index)}
               >
-                &times;
+                <svg
+                  className="h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
           ))}
         </div>
       )}
 
-      <form className="flex items-center" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex items-end">
         <button
           type="button"
-          className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none"
+          className="p-2 -mb-1 text-gray-500 hover:text-blue-500 focus:outline-none"
           onClick={handleAttachmentClick}
         >
           <svg
@@ -83,27 +100,34 @@ const MessageInput = ({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          className="hidden"
           multiple
+          className="hidden"
         />
 
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="flex-grow mx-2 p-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          rows={1}
-        />
+        <div className="flex-1 mx-2">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            ref={messageInputRef}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
+            placeholder="Type a message..."
+            rows={1}
+            style={{
+              minHeight: "40px",
+              maxHeight: "120px",
+            }}
+          ></textarea>
+        </div>
 
         <button
           type="submit"
           className={`p-2 rounded-full ${
             message.trim() || attachments.length > 0
               ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-gray-200 text-gray-400"
           }`}
-          disabled={!message.trim() && attachments.length === 0}
+          disabled={message.trim() === "" && attachments.length === 0}
         >
           <svg
             className="h-5 w-5"

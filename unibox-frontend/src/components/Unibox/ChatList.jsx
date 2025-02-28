@@ -1,12 +1,28 @@
 import React from "react";
 import ChatListItem from "./ChatListItem";
+import { useGetChatsQuery } from "../../store/api";
 
-const ChatList = ({ chats, loading, selectedChatId, onChatSelect }) => {
+const ChatList = ({ selectedChatId, onChatSelect, filters = {} }) => {
+  // Use RTK Query hook for fetching chats with filters
+  const {
+    data: chats = [],
+    isLoading: loading,
+    error,
+  } = useGetChatsQuery(filters);
+
   if (loading) {
     return (
       <div className="p-4 text-center">
         <div className="inline-block w-8 h-8 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
         <p className="mt-2 text-gray-500">Loading chats...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        <p>Error loading chats. Please try again.</p>
       </div>
     );
   }
