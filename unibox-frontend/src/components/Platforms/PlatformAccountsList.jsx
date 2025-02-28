@@ -6,6 +6,7 @@ import {
 } from "../../store/api";
 import NewAccountButton from "./NewAccountButton";
 import PlatformAccountItem from "./PlatformAccountItem";
+import PlatformAccountForm from "./PlatformAccountForm";
 
 const PlatformAccountsList = () => {
   const [selectedPlatformId, setSelectedPlatformId] = useState("");
@@ -14,14 +15,14 @@ const PlatformAccountsList = () => {
   const [deleteAccountId, setDeleteAccountId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Fetch platforms using RTK Query
+  // Replace useEffect/useSelector with RTK Query hooks
   const {
     data: platforms,
     isLoading: platformsLoading,
     error: platformsError,
   } = useGetPlatformsQuery();
 
-  // Fetch accounts with optional platformId filter
+  // Use RTK Query with filter parameters
   const {
     data: accounts,
     isLoading: accountsLoading,
@@ -31,7 +32,7 @@ const PlatformAccountsList = () => {
     selectedPlatformId ? { platformId: selectedPlatformId } : {}
   );
 
-  // Delete account mutation
+  // Replace delete thunk with RTK Query mutation
   const [deleteAccount, { isLoading: isDeleting }] =
     useDeletePlatformAccountMutation();
 
@@ -54,6 +55,13 @@ const PlatformAccountsList = () => {
     setAccountToEdit(null);
   };
 
+  const handleAccountSave = () => {
+    // After saving, close the modal and refetch the accounts
+    setShowModal(false);
+    setAccountToEdit(null);
+    refetchAccounts();
+  };
+
   const handleDeleteClick = (accountId) => {
     setDeleteAccountId(accountId);
     setShowDeleteConfirm(true);
@@ -62,6 +70,7 @@ const PlatformAccountsList = () => {
   const confirmDelete = async () => {
     if (deleteAccountId) {
       try {
+        // Use RTK Query mutation instead of thunk
         await deleteAccount(deleteAccountId).unwrap();
         setShowDeleteConfirm(false);
         setDeleteAccountId(null);
@@ -140,26 +149,18 @@ const PlatformAccountsList = () => {
         )}
       </div>
 
-      {/* Account Form Modal - Would be implemented in a separate component */}
+      {/* Platform Account Form Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          {/* Account form would go here */}
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
             <h3 className="text-lg font-semibold mb-4">
               {accountToEdit ? "Edit Platform Account" : "Add Platform Account"}
             </h3>
-            {/* Form would go here */}
-            <div className="flex justify-end mt-4 space-x-3">
-              <button
-                onClick={handleModalClose}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                {accountToEdit ? "Update" : "Add"} Account
-              </button>
-            </div>
+            <PlatformAccountForm
+              account={accountToEdit}
+              onSave={handleAccountSave}
+              onCancel={handleModalClose}
+            />
           </div>
         </div>
       )}
