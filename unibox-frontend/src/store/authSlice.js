@@ -1,145 +1,136 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-// Get token from localStorage
-const getToken = () => localStorage.getItem("token");
-
-// Set auth token in axios headers
-const setAuthToken = (token) => {
-  if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    localStorage.setItem("token", token);
-  } else {
-    delete axios.defaults.headers.common["Authorization"];
-    localStorage.removeItem("token");
-  }
-};
-
-// Check if user is authenticated
-export const checkAuth = createAsyncThunk(
-  "auth/checkAuth",
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = getToken();
-
-      if (!token) {
-        return rejectWithValue("No token found");
-      }
-
-      setAuthToken(token);
-
-      const res = await axios.get("/api/auth/me");
-      return res.data;
-    } catch (error) {
-      localStorage.removeItem("token");
-      return rejectWithValue(
-        error.response?.data?.message || "Authentication failed"
-      );
-    }
-  }
-);
-
-// Login user
-export const login = createAsyncThunk(
-  "auth/login",
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const res = await axios.post("/api/auth/login", credentials);
-
-      // Set token in localStorage and axios headers
-      setAuthToken(res.data.token);
-
-      return res.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Login failed");
-    }
-  }
-);
-
-// Logout user
-export const logout = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await axios.post("/api/auth/logout");
-
-      // Remove token
-      setAuthToken(null);
-
-      return null;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Logout failed");
-    }
-  }
-);
-
-const initialState = {
-  token: getToken(),
-  isAuthenticated: false,
-  loading: true,
-  user: null,
-  error: null,
-};
+import { createSlice } from "@reduxjs/toolkit";
+import { api } from "./api";
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    user: null,
+    token: localStorage.getItem("token"),
+    isAuthenticated: !!localStorage.getItem("token"),
+    error: null,
+    loginFormData: {
+      email: "",
+      password: "",
+    },
+    registerFormData: {
+      name: "",
+      email: "",
+      password: "",
+      role: "hr",
+    },
+  },
   reducers: {
+    // Reducers for form state management
+    setLoginFormData: (state, action) => {
+      state.loginFormData = action.payload;
+    },
+    setRegisterFormData: (state, action) => {
+      state.registerFormData = action.payload;
+    },
+    resetLoginForm: (state) => {
+      state.loginFormData = {
+        email: "",
+        password: "",
+      };
+    },
+    resetRegisterForm: (state) => {
+      state.registerFormData = {
+        name: "",
+        email: "",
+        password: "",
+        role: "user",
+      };
+    },
     clearError: (state) => {
       state.error = null;
     },
+    logout: (state) => {
+      localStorage.removeItem("token");
+      state.token = null;
+      state.user = null;
+      state.isAuthenticated = false;
+    },
   },
   extraReducers: (builder) => {
-    // Check authentication status
     builder
-      .addCase(checkAuth.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(checkAuth.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        state.loading = false;
-        state.user = action.payload;
-        state.error = null;
-      })
-      .addCase(checkAuth.rejected, (state, action) => {
-        state.token = null;
-        state.isAuthenticated = false;
-        state.loading = false;
-        state.user = null;
-        state.error = action.payload;
-      });
+      // Handle login success
+      .addMatcher(api.endpoints.login.matchFulfilled, (state, { payload }) => {
+        // Store token in localStorage
+        localStorage.setItem("token", payload.token);
 
-    // Login
-    builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(login.fulfilled, (state, action) => {
-        state.token = action.payload.token;
+        state.token = payload.token;
         state.isAuthenticated = true;
-        state.loading = false;
-        state.user = action.payload.user;
         state.error = null;
-      })
-      .addCase(login.rejected, (state, action) => {
-        state.token = null;
-        state.isAuthenticated = false;
-        state.loading = false;
-        state.user = null;
-        state.error = action.payload;
-      });
 
-    // Logout
-    builder.addCase(logout.fulfilled, (state) => {
-      state.token = null;
-      state.isAuthenticated = false;
-      state.loading = false;
-      state.user = null;
-      state.error = null;
-    });
+        // If user data is included in response
+        if (payload.user) {
+          state.user = payload.user;
+        }
+      })
+      // Handle login error
+      .addMatcher(api.endpoints.login.matchRejected, (state, { payload }) => {
+        state.error = payload?.data?.message || "Login failed";
+        state.isAuthenticated = false;
+      })
+      // Handle register success
+      .addMatcher(
+        api.endpoints.register.matchFulfilled,
+        (state, { payload }) => {
+          // If registration automatically logs in the user
+          if (payload.token) {
+            localStorage.setItem("token", payload.token);
+            state.token = payload.token;
+            state.isAuthenticated = true;
+
+            if (payload.user) {
+              state.user = payload.user;
+            }
+          }
+
+          state.error = null;
+        }
+      )
+      // Handle register error
+      .addMatcher(
+        api.endpoints.register.matchRejected,
+        (state, { payload }) => {
+          state.error = payload?.data?.message || "Registration failed";
+        }
+      )
+      // Handle get current user success
+      .addMatcher(
+        api.endpoints.getCurrentUser.matchFulfilled,
+        (state, { payload }) => {
+          state.user = payload;
+          state.isAuthenticated = true;
+          state.error = null;
+        }
+      )
+      // Handle get current user error
+      .addMatcher(
+        api.endpoints.getCurrentUser.matchRejected,
+        (state, { payload }) => {
+          // Only change authentication state if token is invalid
+          if (payload?.status === 401) {
+            localStorage.removeItem("token");
+            state.token = null;
+            state.user = null;
+            state.isAuthenticated = false;
+          }
+
+          state.error = payload?.data?.message || "Authentication failed";
+        }
+      );
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const {
+  setLoginFormData,
+  setRegisterFormData,
+  resetLoginForm,
+  resetRegisterForm,
+  clearError,
+  logout,
+} = authSlice.actions;
 
 export default authSlice.reducer;

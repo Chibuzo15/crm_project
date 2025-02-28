@@ -1,124 +1,163 @@
-import React from "react";
-import { format } from "date-fns";
+import React, { useState } from "react";
+import { useGetUsersQuery, useDeleteUserMutation } from "../../store/api";
+import { useDispatch } from "react-redux";
+import { prepareUserFormForEdit, setUserFormMode } from "../../store/userSlice";
 
-const UserList = ({ users, onEdit, onDelete }) => {
-  if (users.length === 0) {
+const UserList = ({ onEditUser }) => {
+  const dispatch = useDispatch();
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  // Use RTK Query hook instead of useSelector and useEffect
+  const {
+    data: users,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetUsersQuery();
+
+  // Use RTK Query mutation hook instead of dispatch(deleteUser())
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+
+  const handleEditUser = (user) => {
+    // Use the action from userSlice to prepare the form for editing
+    dispatch(prepareUserFormForEdit(user));
+    dispatch(setUserFormMode("edit"));
+
+    if (onEditUser) {
+      onEditUser(user);
+    }
+  };
+
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      try {
+        await deleteUser(userToDelete._id).unwrap();
+        setShowConfirmDelete(false);
+        setUserToDelete(null);
+      } catch (err) {
+        console.error("Failed to delete user:", err);
+      }
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setUserToDelete(null);
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center p-4">Loading users...</div>;
+  }
+
+  if (isError) {
     return (
-      <div className="flex justify-center items-center h-64 bg-gray-50 rounded-md">
-        <p className="text-gray-500">No users found</p>
+      <div className="p-4 bg-red-100 text-red-700 rounded">
+        Error loading users: {error.message || "Unknown error"}
+        <button
+          onClick={refetch}
+          className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Name
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Email
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Role
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Response Time
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Last Active
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Created
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="py-2 px-4 border-b text-left">Name</th>
+            <th className="py-2 px-4 border-b text-left">Email</th>
+            <th className="py-2 px-4 border-b text-left">Role</th>
+            <th className="py-2 px-4 border-b text-left">
+              Max Response Time (h)
+            </th>
+            <th className="py-2 px-4 border-b text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users &&
+            users.map((user) => (
               <tr key={user._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {user.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{user.email}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="py-2 px-4 border-b">{user.name}</td>
+                <td className="py-2 px-4 border-b">{user.email}</td>
+                <td className="py-2 px-4 border-b">
                   <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    className={`px-2 py-1 rounded text-xs ${
                       user.role === "admin"
                         ? "bg-purple-100 text-purple-800"
-                        : "bg-green-100 text-green-800"
+                        : "bg-blue-100 text-blue-800"
                     }`}
                   >
                     {user.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.maxResponseTime} hrs
+                <td className="py-2 px-4 border-b">
+                  {user.maxResponseTime || "N/A"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.lastActive
-                    ? format(new Date(user.lastActive), "MMM d, yyyy")
-                    : "Never"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {user.createdAt
-                    ? format(new Date(user.createdAt), "MMM d, yyyy")
-                    : "Unknown"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="py-2 px-4 border-b">
                   <button
-                    onClick={() => onEdit(user)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
+                    onClick={() => handleEditUser(user)}
+                    className="mr-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => onDelete(user._id)}
-                    className={`text-red-600 hover:text-red-900 ${
-                      user.role === "admin"
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    disabled={user.role === "admin"}
+                    onClick={() => handleDeleteClick(user)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   >
                     Delete
                   </button>
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
+          {users && users.length === 0 && (
+            <tr>
+              <td colSpan="5" className="py-4 text-center text-gray-500">
+                No users found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* Delete Confirmation Modal */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-6">
+              Are you sure you want to delete user '{userToDelete?.name}'? This
+              action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -24,6 +24,8 @@ import UserManagement from "./components/Admin/UserManagement";
 import ActivityDashboard from "./components/Analytics/ActivityDashboard";
 import NotFound from "./components/Common/NotFound";
 
+import "./App.css";
+
 function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);

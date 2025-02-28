@@ -1,39 +1,41 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
+
+// Import the API service
+import { api } from "./api";
+
+// Import slices
 import authReducer from "./authSlice";
 import chatReducer from "./chatSlice";
 import messageReducer from "./messageSlice";
-import jobTypeReducer from "./jobTypeSlice";
-import platformReducer from "./platformSlice";
-import accountReducer from "./accountSlice";
-import jobPostingReducer from "./jobPostingSlice";
+import analyticsReducer from "./analyticsSlice";
 import upworkReducer from "./upworkSlice";
 import userReducer from "./userSlice";
-import analyticsReducer from "./analyticsSlice";
+import platformReducer from "./platformSlice";
+import jobTypeReducer from "./jobTypeSlice";
+import jobPostingReducer from "./jobPostingSlice";
 
 const store = configureStore({
   reducer: {
+    // Add the generated reducer as a specific top-level slice
+    [api.reducerPath]: api.reducer,
     auth: authReducer,
     chat: chatReducer,
     message: messageReducer,
-    jobType: jobTypeReducer,
-    platform: platformReducer,
-    account: accountReducer,
-    jobPosting: jobPostingReducer,
+    analytics: analyticsReducer,
     upwork: upworkReducer,
     user: userReducer,
-    analytics: analyticsReducer,
+    platform: platformReducer,
+    jobType: jobTypeReducer,
+    jobPosting: jobPostingReducer,
   },
+  // Adding the api middleware enables caching, invalidation, polling,
+  // and other useful features of RTK Query.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        // Ignore these action types
-        ignoredActions: ["chat/updateChat/fulfilled"],
-        // Ignore these field paths in all actions
-        ignoredActionPaths: ["meta.arg", "payload.timestamp"],
-        // Ignore these paths in the state
-        ignoredPaths: ["chat.currentChat.followUpDate"],
-      },
-    }),
+    getDefaultMiddleware().concat(api.middleware),
 });
+
+// Optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+setupListeners(store.dispatch);
 
 export default store;

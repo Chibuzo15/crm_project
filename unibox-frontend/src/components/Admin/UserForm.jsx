@@ -1,57 +1,108 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useGetUserByIdQuery,
+} from "../../store/api";
+import {
+  setUserFormData,
+  resetUserForm,
+  setUserFormErrors,
+} from "../../store/userSlice";
 
 const UserForm = ({ user, onSubmit, onCancel }) => {
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState(user?.role || "user");
-  const [maxResponseTime, setMaxResponseTime] = useState(
-    user?.maxResponseTime || 24
-  );
-  const [errors, setErrors] = useState({});
+  const dispatch = useDispatch();
+  const { userFormData, userFormMode, selectedUserId, userFormErrors } =
+    useSelector((state) => state.user);
+  const [validationErrors, setValidationErrors] = useState({});
+
+  // Replace thunks with RTK Query mutations
+  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+
+  // Get user data for editing if needed
+  const { data: userData } = useGetUserByIdQuery(selectedUserId, {
+    // Skip query if not in edit mode or no ID
+    skip: userFormMode !== "edit" || !selectedUserId,
+  });
+
+  // Fill form with user data if in edit mode
+  useEffect(() => {
+    if (userFormMode === "edit" && userData) {
+      dispatch(
+        setUserFormData({
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          maxResponseTime: userData.maxResponseTime || 8,
+        })
+      );
+    }
+  }, [userData, userFormMode, dispatch]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    dispatch(
+      setUserFormData({
+        ...userFormData,
+        [name]: value,
+      })
+    );
+  };
 
   const validateForm = () => {
-    const newErrors = {};
+    // Keep original validation logic
+    const errors = {};
 
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
+    if (!userFormData.name.trim()) {
+      errors.name = "Name is required";
     }
 
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
+    if (!userFormData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(userFormData.email)) {
+      errors.email = "Email is invalid";
     }
 
-    if (!user && !password.trim()) {
-      newErrors.password = "Password is required for new users";
-    } else if (!user && password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    if (userFormMode === "create" && !userFormData.password) {
+      errors.password = "Password is required";
+    } else if (userFormMode === "create" && userFormData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    dispatch(setUserFormErrors(null));
+
     if (!validateForm()) {
       return;
     }
 
-    const userData = {
-      name,
-      email,
-      role,
-      maxResponseTime: parseInt(maxResponseTime, 10),
-    };
+    try {
+      if (userFormMode === "create") {
+        // Use RTK Query mutation instead of createUser thunk
+        await createUser(userFormData).unwrap();
+      } else {
+        // Use RTK Query mutation instead of updateUser thunk
+        await updateUser({
+          id: selectedUserId,
+          userData: userFormData,
+        }).unwrap();
+      }
 
-    if (password) {
-      userData.password = password;
+      dispatch(resetUserForm());
+      if (onCancel) onCancel();
+    } catch (err) {
+      // Error handling
+      dispatch(setUserFormErrors(err.data?.message || "Failed to save user"));
+      console.error("Error saving user:", err);
     }
-
-    onSubmit(userData);
   };
 
   return (
@@ -175,6 +226,7 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
           {user ? "Update" : "Create"} User
         </button>
       </div>
+      {(isCreating || isUpdating) && <div> Submitting </div>}
     </form>
   );
 };

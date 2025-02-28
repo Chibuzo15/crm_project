@@ -1,27 +1,35 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useGetCurrentUserQuery } from "../../store/api";
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
-  const location = useLocation();
+const ProtectedRoute = ({ requiredRole }) => {
+  const { isAuthenticated, token } = useSelector((state) => state.auth);
 
-  // If authentication is still loading, show a loading spinner
-  if (loading) {
+  // Skip the query if there's no token - no need to make API call
+  const { isLoading, isError } = useGetCurrentUserQuery(undefined, {
+    // Skip the API call if no token exists
+    skip: !token,
+    // Use pollingInterval if you want to periodically check authentication
+    // pollingInterval: 300000, // 5 minutes
+  });
+
+  // If we're still waiting for the auth check, show a loading screen
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
-  // If not authenticated, redirect to login with current location as redirect target
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // If not authenticated or auth check failed, redirect to login
+  if (!isAuthenticated || isError) {
+    return <Navigate to="/login" />;
   }
 
-  // If authenticated, render the children
-  return children;
+  // If authentication successful, render the child routes
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

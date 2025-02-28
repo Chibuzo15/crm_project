@@ -1,15 +1,24 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useGetCurrentUserQuery } from "../../store/api";
 import { logout } from "../../store/authSlice";
 
 const Header = ({ onMenuToggle }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef(null);
 
+  const { token } = useSelector((state) => state.auth);
+
+  // Replace getCurrentUser thunk with RTK Query
+  const { data: user, isLoading } = useGetCurrentUserQuery(undefined, {
+    skip: !token,
+  });
+
   const handleLogout = () => {
     dispatch(logout());
+    setShowProfileMenu(false);
   };
 
   const toggleProfileMenu = () => {

@@ -1,26 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../../store/userSlice";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import UserList from "./UserList";
 import UserForm from "./UserForm";
+import { resetUserForm, setUserFormMode } from "../../store/userSlice";
+import { useGetUsersQuery } from "../../store/api";
 
 const UserManagement = () => {
   const dispatch = useDispatch();
-  const { users, loading, error } = useSelector((state) => state.user);
+
   const [showForm, setShowForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
-
-  const handleCreateUser = () => {
-    setSelectedUser(null);
+  const handleAddUser = () => {
+    dispatch(resetUserForm());
+    dispatch(setUserFormMode("create"));
     setShowForm(true);
   };
 
@@ -56,17 +49,11 @@ const UserManagement = () => {
         </h2>
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          onClick={handleCreateUser}
+          onClick={handleAddUser}
         >
           Add New User
         </button>
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
 
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -83,17 +70,11 @@ const UserManagement = () => {
         </div>
       )}
 
-      {loading && !users.length ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        <UserList
-          users={users}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
-        />
-      )}
+      <UserList
+        // users={users}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUser}
+      />
     </div>
   );
 };
