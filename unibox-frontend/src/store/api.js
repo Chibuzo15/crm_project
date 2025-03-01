@@ -379,9 +379,9 @@ export const api = createApi({
     }),
 
     getUpworkJobProposals: builder.query({
-      query: (accountId) => ({
+      query: (params) => ({
         url: "/job-postings/upwork/proposals",
-        params: { accountId },
+        params,
       }),
       providesTags: [{ type: "JobPosting", id: "UpworkProposals" }],
     }),

@@ -4,6 +4,7 @@ import {
   useGetUpworkJobProposalsQuery,
   useGetPlatformAccountsQuery,
   useSyncUpworkJobProposalMutation,
+  useGetPlatformsQuery,
 } from "../../store/api";
 import { setUpworkProposalsFilter } from "../../store/jobPostingSlice";
 import JobProposalItem from "./JobProposalItem";
@@ -12,13 +13,26 @@ const UpworkJobProposals = () => {
   const dispatch = useDispatch();
   const { upworkProposalsFilter } = useSelector((state) => state.jobPosting);
 
+  const { data: platforms, isLoading: platformsLoading } = useGetPlatformsQuery(
+    {}
+  );
+
+  const UpworkPlatformId = React.useMemo(() => {
+    if (!platforms?.[0]) return;
+    let upworkPlatformObj = platforms?.find(
+      (platform) => platform?.name?.toLowerCase() == "upwork"
+    );
+
+    return upworkPlatformObj?._id;
+  }, [platforms]);
+
   // Replace useEffect/useSelector with RTK Query hooks
   const {
     data: accounts,
     isLoading: accountsLoading,
     error: accountsError,
   } = useGetPlatformAccountsQuery({
-    platformName: "Upwork",
+    platform: UpworkPlatformId,
   });
 
   // Get proposals with RTK Query
@@ -255,7 +269,7 @@ const UpworkJobProposals = () => {
         !proposalsLoading &&
         !proposalsError &&
         filteredProposals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1  gap-4 mt-4">
             {filteredProposals.map((proposal) => (
               <JobProposalItem key={proposal.id} proposal={proposal} />
             ))}

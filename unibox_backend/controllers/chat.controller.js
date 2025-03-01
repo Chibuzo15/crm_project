@@ -8,6 +8,7 @@ exports.getChats = async (req, res) => {
     const {
       search,
       platform,
+      platformAccount,
       jobType,
       status,
       followUp,
@@ -29,6 +30,10 @@ exports.getChats = async (req, res) => {
 
     if (platform) {
       filter.platform = mongoose.Types.ObjectId(platform);
+    }
+
+    if (platformAccount) {
+      filter.platformAccount = mongoose.Types.ObjectId(platformAccount);
     }
 
     if (jobType) {

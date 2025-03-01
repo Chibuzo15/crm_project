@@ -53,10 +53,14 @@ const JobPostingSchema = new mongoose.Schema(
     },
     candidates: [
       {
-        externalId: String,
-        name: String,
-        profileUrl: String,
-        status: String,
+        externalId: String, // ID from the external platform
+        username: String, // Username on the platform
+        name: String, // Full name of the candidate
+        profileUrl: String, // Direct link to their profile
+        status: String, // Status of their application (e.g., "new", "reviewing", "rejected")
+        proposal: String, // Their message/proposal content
+        date: Date, // When they submitted the proposal
+        isSynced: Boolean, // Whether a chat has been created for this proposal
       },
     ],
   },

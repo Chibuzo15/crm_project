@@ -1,5 +1,8 @@
 const JobPosting = require("../models/JobPosting");
+const Platform = require("../models/Platform");
 const Chat = require("../models/Chat");
+const PlatformAccount = require("../models/PlatformAccount");
+const Message = require("../models/Message");
 
 // Get all job postings
 exports.getAllJobPostings = async (req, res) => {
@@ -300,5 +303,286 @@ exports.updateCandidateStatus = async (req, res) => {
   } catch (error) {
     console.error("Error in updateCandidateStatus:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get Upwork job proposals for a specific account
+exports.getUpworkJobProposals = async (req, res) => {
+  try {
+    const { accountId } = req.query;
+
+    if (!accountId) {
+      return res.status(400).json({
+        success: false,
+        message: "Account ID is required",
+      });
+    }
+
+    // Find all job postings for this account on Upwork platform
+    const platform = await Platform.findOne({ name: "Upwork" });
+
+    if (!platform) {
+      return res.status(404).json({
+        success: false,
+        message: "Upwork platform not found",
+      });
+    }
+
+    const jobPostings = await JobPosting.find({
+      platform: platform._id,
+      platformAccount: accountId,
+    }).populate("jobType", "title");
+
+    // Extract all candidates from job postings
+    let proposals = [];
+
+    jobPostings.forEach((posting) => {
+      if (posting.candidates && posting.candidates.length > 0) {
+        proposals = proposals.concat(
+          posting.candidates.map((candidate) => ({
+            id: candidate.externalId,
+            jobPostingId: posting._id,
+            jobTitle: posting.title,
+            jobType: posting.jobType ? posting.jobType.title : "Unknown",
+            candidateName: candidate.name,
+            candidateUsername: candidate.username,
+            profileUrl: candidate.profileUrl,
+            status: candidate.status,
+            proposal: candidate.proposal,
+            date: candidate.date,
+            isSynced: candidate.isSynced,
+          }))
+        );
+      }
+    });
+
+    return res.status(200).json(proposals);
+  } catch (error) {
+    console.error("Error fetching Upwork proposals:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Sync an Upwork job proposal (create a chat from a proposal)
+exports.syncUpworkJobProposal = async (req, res) => {
+  try {
+    const { accountId, proposalId } = req.body;
+
+    if (!accountId || !proposalId) {
+      return res.status(400).json({
+        success: false,
+        message: "Account ID and Proposal ID are required",
+      });
+    }
+
+    // Find the platform
+    const platform = await Platform.findOne({ name: "Upwork" });
+    if (!platform) {
+      return res.status(404).json({
+        success: false,
+        message: "Upwork platform not found",
+      });
+    }
+
+    // Find the account
+    const account = await PlatformAccount.findById(accountId);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "Platform account not found",
+      });
+    }
+
+    // Find the job posting that contains this proposal
+    const jobPosting = await JobPosting.findOne({
+      platform: platform._id,
+      platformAccount: accountId,
+      "candidates.externalId": proposalId,
+    }).populate("jobType");
+
+    console.log("req.biody ", req.body);
+
+    if (!jobPosting) {
+      return res.status(400).json({
+        success: false,
+        message: "Job posting with this proposal not found",
+      });
+    }
+
+    // Find the candidate in the job posting
+    const candidate = jobPosting.candidates.find(
+      (c) => c.externalId === proposalId
+    );
+
+    if (!candidate) {
+      return res.status(400).json({
+        success: false,
+        message: "Candidate not found in job posting",
+      });
+    }
+
+    // Check if chat already exists
+    const existingChat = await Chat.findOne({
+      platformId: platform._id,
+      platformAccountId: accountId,
+      jobPostingId: jobPosting._id,
+      candidateUsername: candidate.username,
+    });
+
+    if (existingChat) {
+      return res.status(400).json({
+        success: false,
+        message: "Chat already exists for this candidate",
+      });
+    }
+
+    // Create a new chat
+    const chat = new Chat({
+      platform: platform._id,
+      platformAccount: accountId,
+      jobPostingId: jobPosting._id,
+      jobType: jobPosting.jobType._id,
+      createdAt: new Date(),
+      lastMessageDate: candidate.date || new Date(),
+      followUpDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      followUpInterval: 2, // Default 2 days
+      status: "new",
+      candidateUsername: candidate.username,
+      candidateName: candidate.name,
+      notes: `Applied for: ${jobPosting.title}\nProfile: ${candidate.profileUrl}`,
+    });
+
+    await chat.save();
+
+    // Create the first message from the candidate
+    const message = new Message({
+      chat: chat._id,
+      content: candidate.proposal || "I'm interested in your job posting.",
+      isFromUs: false,
+      hasAttachment: false,
+      timestamp: candidate.date || new Date(),
+      isRead: false,
+    });
+
+    await message.save();
+
+    // Mark the candidate as synced
+    candidate.isSynced = true;
+    await jobPosting.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Proposal synchronized successfully",
+      chat: chat,
+    });
+  } catch (error) {
+    console.error("Error syncing proposal:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// For testing: Add mock proposals to a job posting
+exports.addMockUpworkProposals = async (req, res) => {
+  try {
+    const { jobPostingId, count = 3 } = req.body;
+
+    const jobPosting = await JobPosting.findById(jobPostingId).populate(
+      "platform",
+      "name"
+    );
+
+    if (!jobPosting) {
+      return res.status(404).json({
+        success: false,
+        message: "Job posting not found",
+      });
+    }
+
+    // Generate mock candidates
+    const mockCandidates = [];
+    const names = [
+      "John Smith",
+      "Sarah Lee",
+      "Michael Wong",
+      "Emma Davis",
+      "Robert Chen",
+    ];
+    const proposals = [
+      "Hello, I'm very interested in this position and have 5+ years of relevant experience.",
+      "I'd love to discuss this opportunity. I have worked on similar projects before.",
+      "I believe I'm a perfect fit for this role given my background and skills.",
+      "Your job posting caught my attention. I have the expertise you're looking for.",
+      "I'm excited about this role and would appreciate the opportunity to discuss it further.",
+    ];
+
+    // Platform name for URL formatting
+    const platformName = jobPosting.platform.name.toLowerCase();
+
+    // Create mock candidates
+    for (let i = 0; i < count; i++) {
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      const username =
+        randomName.toLowerCase().replace(" ", "") +
+        Math.floor(Math.random() * 1000);
+
+      // Platform-specific profile URL
+      let profileUrl = "";
+
+      switch (platformName) {
+        case "upwork":
+          profileUrl = `https://www.upwork.com/freelancers/${username}`;
+          break;
+        case "fiverr":
+          profileUrl = `https://www.fiverr.com/${username}`;
+          break;
+        case "behance":
+          profileUrl = `https://www.behance.net/${username}`;
+          break;
+        case "pinterest":
+          profileUrl = `https://www.pinterest.com/${username}`;
+          break;
+        default:
+          profileUrl = `https://example.com/${username}`;
+      }
+
+      mockCandidates.push({
+        externalId: "mock_" + Math.random().toString(36).substring(2, 10),
+        username: username,
+        name: randomName,
+        profileUrl: profileUrl,
+        status: "new",
+        proposal: proposals[Math.floor(Math.random() * proposals.length)],
+        date: new Date(
+          Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+        ), // Random date within last week
+        isSynced: false,
+      });
+    }
+
+    // Add candidates to job posting
+    if (!jobPosting.candidates) {
+      jobPosting.candidates = [];
+    }
+
+    jobPosting.candidates = [...jobPosting.candidates, ...mockCandidates];
+    await jobPosting.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Added ${count} mock proposals to job posting`,
+      data: mockCandidates,
+    });
+  } catch (error) {
+    console.error("Error adding mock proposals:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

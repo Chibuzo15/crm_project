@@ -116,17 +116,18 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
         </label>
         <input
           type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          name="name"
+          onChange={(e) => handleChange(e)}
           className={`w-full px-3 py-2 border ${
-            errors.name ? "border-red-500" : "border-gray-300"
+            validationErrors.name ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 ${
-            errors.name ? "focus:ring-red-500" : "focus:ring-blue-500"
+            validationErrors.name ? "focus:ring-red-500" : "focus:ring-blue-500"
           } focus:border-transparent`}
         />
-        {errors.name && (
-          <div className="mt-1 text-sm text-red-500">{errors.name}</div>
+        {validationErrors.name && (
+          <div className="mt-1 text-sm text-red-500">
+            {validationErrors.name}
+          </div>
         )}
       </div>
 
@@ -139,17 +140,21 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
         </label>
         <input
           type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          // value={email}
+          onChange={(e) => handleChange(e)}
           className={`w-full px-3 py-2 border ${
-            errors.email ? "border-red-500" : "border-gray-300"
+            validationErrors.email ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 ${
-            errors.email ? "focus:ring-red-500" : "focus:ring-blue-500"
+            validationErrors.email
+              ? "focus:ring-red-500"
+              : "focus:ring-blue-500"
           } focus:border-transparent`}
         />
-        {errors.email && (
-          <div className="mt-1 text-sm text-red-500">{errors.email}</div>
+        {validationErrors.email && (
+          <div className="mt-1 text-sm text-red-500">
+            {validationErrors.email}
+          </div>
         )}
       </div>
 
@@ -162,17 +167,21 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
         </label>
         <input
           type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          name="password"
+          // value={password}
+          onChange={(e) => handleChange(e)}
           className={`w-full px-3 py-2 border ${
-            errors.password ? "border-red-500" : "border-gray-300"
+            validationErrors.password ? "border-red-500" : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-2 ${
-            errors.password ? "focus:ring-red-500" : "focus:ring-blue-500"
+            validationErrors.password
+              ? "focus:ring-red-500"
+              : "focus:ring-blue-500"
           } focus:border-transparent`}
         />
-        {errors.password && (
-          <div className="mt-1 text-sm text-red-500">{errors.password}</div>
+        {validationErrors.password && (
+          <div className="mt-1 text-sm text-red-500">
+            {validationErrors.password}
+          </div>
         )}
       </div>
 
@@ -184,9 +193,9 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
           Role
         </label>
         <select
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          name="role"
+          // value={role}
+          onChange={(e) => handleChange(e)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="user">User</option>
@@ -203,9 +212,9 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
         </label>
         <input
           type="number"
-          id="maxResponseTime"
-          value={maxResponseTime}
-          onChange={(e) => setMaxResponseTime(e.target.value)}
+          name="maxResponseTime"
+          // value={maxResponseTime}
+          onChange={(e) => handleChange(e)}
           min="1"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
