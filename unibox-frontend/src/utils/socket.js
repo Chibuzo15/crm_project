@@ -1,4 +1,15 @@
 import { io } from "socket.io-client";
+import {
+  JOIN_CHAT,
+  JOIN_USER_CHANNEL,
+  LEAVE_CHAT,
+  SEND_MESSAGE,
+  SOCKET_CONNECT,
+  SOCKET_CONNECT_ERROR,
+  SOCKET_DISCONNECT,
+  STOP_TYPING,
+  TYPING,
+} from "./socketEvents";
 
 // Get the API URL from environment variables or use a default
 const API_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
@@ -9,6 +20,7 @@ let socket = io(API_URL, {
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
+  query: { token: "" },
 });
 
 // Add authentication data when connecting
@@ -23,15 +35,15 @@ const updateSocketAuth = (token) => {
 };
 
 // Handle common socket events
-socket.on("connect", () => {
+socket.on(SOCKET_CONNECT, () => {
   console.log("Socket connected");
 });
 
-socket.on("connect_error", (err) => {
-  console.error("Socket connection error:", err.message);
+socket.on(SOCKET_CONNECT_ERROR, (err) => {
+  console.error("Socket connection error:", err);
 });
 
-socket.on("disconnect", (reason) => {
+socket.on(SOCKET_DISCONNECT, (reason) => {
   console.log("Socket disconnected:", reason);
 });
 
@@ -82,14 +94,14 @@ export default {
   emitWithAck: (event, data) => emitEvent(event, data),
 
   // Chat room methods
-  joinRoom: (roomId) => socket.emit("join_room", roomId),
-  leaveRoom: (roomId) => socket.emit("leave_room", roomId),
+  joinChat: (roomId) => socket.emit(JOIN_CHAT, roomId),
+  leaveChat: (roomId) => socket.emit(LEAVE_CHAT, roomId),
 
   // Chat specific methods
-  sendMessage: (message) => socket.emit("send_message", message),
-  startTyping: (data) => socket.emit("typing", data),
-  stopTyping: (data) => socket.emit("stop_typing", data),
+  sendMessage: (message) => socket.emit(SEND_MESSAGE, message),
+  startTyping: (data) => socket.emit(TYPING, data),
+  stopTyping: (data) => socket.emit(STOP_TYPING, data),
 
   // User-specific methods
-  joinUserChannel: (userId) => socket.emit("join", { userId }),
+  joinUserChannel: (userId) => socket.emit(JOIN_USER_CHANNEL, { userId }),
 };

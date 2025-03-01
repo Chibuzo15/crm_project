@@ -5,6 +5,13 @@ const UserActivity = require("../models/UserActivity");
 const fs = require("fs");
 const path = require("path");
 
+const socketInstance = require("../socket/socketInstance");
+const {
+  NEW_MESSAGE,
+  MESSAGES_READ,
+  CHAT_UPDATED,
+} = require("../utils/socketEvents");
+
 exports.getMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -122,6 +129,13 @@ exports.sendMessage = async (req, res) => {
       "name"
     );
 
+    // Emit message to all users in the chat room
+    const io = socketInstance.getIO();
+    io.to(chatId).emit(NEW_MESSAGE, populatedMessage);
+
+    // Also emit chat updated event
+    io.emit(CHAT_UPDATED, { chatId });
+
     res.status(201).json(populatedMessage);
   } catch (error) {
     console.error("Error in sendMessage:", error);
@@ -144,6 +158,10 @@ exports.updateMessage = async (req, res) => {
     if (!message) {
       return res.status(404).json({ message: "Message not found" });
     }
+
+    // Emit messages read event
+    const io = socketInstance.getIO();
+    io.to(message.chat).emit(MESSAGES_READ, { chatId: message.chat });
 
     res.json(message);
   } catch (error) {

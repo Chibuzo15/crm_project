@@ -6,12 +6,27 @@ const Message = require("../models/Message");
 const UserActivity = require("../models/UserActivity");
 const mongoose = require("mongoose");
 
+const {
+  NEW_MESSAGE,
+  SOCKET_ERROR,
+  JOIN_CHAT,
+  SEND_MESSAGE,
+  LEAVE_CHAT,
+  EXTERNAL_MESSAGE,
+  NEW_CHAT,
+  TYPING,
+  STOP_TYPING,
+  SOCKET_DISCONNECT,
+  MESSAGES_READ,
+} = require("../utils/socketEvents");
+
 const socketHandler = (io) => {
   // Socket authentication middleware
   io.use(async (socket, next) => {
     try {
       // Get token from socket handshake query
-      const token = socket.handshake.query?.token;
+      const token =
+        socket.handshake.auth?.token || socket.handshake.query?.token;
 
       if (!token) {
         return next(new Error("Authentication error: No token provided"));
@@ -52,18 +67,18 @@ const socketHandler = (io) => {
     const activeChats = new Set();
 
     // Join chat room
-    socket.on("join_chat", async (chatId) => {
+    socket.on(JOIN_CHAT, async (chatId) => {
       try {
         // Validate chatId
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
-          socket.emit("error", { message: "Invalid chat ID" });
+          socket.emit(SOCKET_ERROR, { message: "Invalid chat ID" });
           return;
         }
 
         // Check if chat exists
         const chat = await Chat.findById(chatId);
         if (!chat) {
-          socket.emit("error", { message: "Chat not found" });
+          socket.emit(SOCKET_ERROR, { message: "Chat not found" });
           return;
         }
 
@@ -87,7 +102,7 @@ const socketHandler = (io) => {
         await Chat.findByIdAndUpdate(chatId, { unreadCount: 0 });
 
         // Notify client that messages are marked as read
-        socket.emit("messages_read", { chatId });
+        socket.emit(MESSAGES_READ, { chatId });
       } catch (error) {
         console.error("Error joining chat:", error);
         socket.emit("error", { message: "Error joining chat" });
@@ -95,14 +110,14 @@ const socketHandler = (io) => {
     });
 
     // Leave chat room
-    socket.on("leave_chat", (chatId) => {
+    socket.on(LEAVE_CHAT, (chatId) => {
       socket.leave(chatId);
       activeChats.delete(chatId);
       console.log(`User ${socket.user.name} left chat: ${chatId}`);
     });
 
     // Send message
-    socket.on("send_message", async (messageData) => {
+    socket.on(SEND_MESSAGE, async (messageData) => {
       try {
         const { chat: chatId, content, attachments = [] } = messageData;
 
@@ -115,7 +130,7 @@ const socketHandler = (io) => {
         // Check if chat exists
         const chat = await Chat.findById(chatId);
         if (!chat) {
-          socket.emit("error", { message: "Chat not found" });
+          socket.emit(SOCKET_ERROR, { message: "Chat not found" });
           return;
         }
 
@@ -138,7 +153,7 @@ const socketHandler = (io) => {
         );
 
         // Emit message to all users in the chat room
-        io.to(chatId).emit("new_message", populatedMessage);
+        io.to(chatId).emit(NEW_MESSAGE, populatedMessage);
 
         // Track user activity
         const today = new Date();
@@ -183,13 +198,13 @@ const socketHandler = (io) => {
         console.log(`Message sent by ${socket.user.name} in chat: ${chatId}`);
       } catch (error) {
         console.error("Error sending message:", error);
-        socket.emit("error", { message: "Error sending message" });
+        socket.emit(SOCKET_ERROR, { message: "Error sending message" });
       }
     });
 
     // Handle external message (from platform API)
     // This would be called by a platform webhook handler
-    socket.on("external_message", async (data) => {
+    socket.on(EXTERNAL_MESSAGE, async (data) => {
       try {
         const {
           chatId,
@@ -221,13 +236,13 @@ const socketHandler = (io) => {
           });
 
           // Emit message to all users in the chat room
-          io.to(chatId).emit("new_message", message);
+          io.to(chatId).emit(NEW_MESSAGE, message);
 
           // Also notify all connected admin users
           const admins = await User.find({ role: "admin" });
           admins.forEach((admin) => {
             io.to(admin._id.toString()).emit("chat_notification", {
-              type: "new_message",
+              type: NEW_MESSAGE,
               chatId,
               message,
             });
@@ -239,7 +254,7 @@ const socketHandler = (io) => {
           const platformDoc = await Platform.findOne({ name: platform });
 
           if (!platformDoc) {
-            socket.emit("error", { message: "Platform not found" });
+            socket.emit(SOCKET_ERROR, { message: "Platform not found" });
             return;
           }
 
@@ -258,7 +273,7 @@ const socketHandler = (io) => {
             });
 
             if (!account) {
-              socket.emit("error", {
+              socket.emit(SOCKET_ERROR, {
                 message: "No active account for this platform",
               });
               return;
@@ -294,23 +309,27 @@ const socketHandler = (io) => {
           });
 
           // Notify all connected users about the new chat/message
-          io.emit("new_chat", {
+          io.emit(NEW_CHAT, {
             chat,
             message,
           });
         } else {
-          socket.emit("error", { message: "Invalid external message data" });
+          socket.emit(SOCKET_ERROR, {
+            message: "Invalid external message data",
+          });
         }
       } catch (error) {
         console.error("Error handling external message:", error);
-        socket.emit("error", { message: "Error handling external message" });
+        socket.emit(SOCKET_ERROR, {
+          message: "Error handling external message",
+        });
       }
     });
 
     // Handle typing indicator
-    socket.on("typing", (chatId) => {
+    socket.on(TYPING, (chatId) => {
       // Broadcast to all users in the chat except the sender
-      socket.to(chatId).emit("typing", {
+      socket.to(chatId).emit(TYPING, {
         chatId,
         user: {
           _id: socket.user._id,
@@ -320,8 +339,8 @@ const socketHandler = (io) => {
     });
 
     // Handle stop typing indicator
-    socket.on("stop_typing", (chatId) => {
-      socket.to(chatId).emit("stop_typing", {
+    socket.on(STOP_TYPING, (chatId) => {
+      socket.to(chatId).emit(STOP_TYPING, {
         chatId,
         user: {
           _id: socket.user._id,
@@ -331,7 +350,7 @@ const socketHandler = (io) => {
     });
 
     // Handle disconnection
-    socket.on("disconnect", () => {
+    socket.on(SOCKET_DISCONNECT, () => {
       console.log(`User disconnected: ${socket.user.name}`);
 
       // Leave all active chat rooms

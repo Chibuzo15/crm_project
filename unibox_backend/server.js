@@ -11,6 +11,7 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const path = require("path");
+const socketInstance = require("./socket/socketInstance");
 
 // Load environment variables
 dotenv.config();
@@ -37,24 +38,39 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: [
+      process.env.CLIENT_URL,
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
+// Initialize socket instance for use across the application
+socketInstance.init(io);
+
 // Set up socket middleware
 io.use((socket, next) => {
-  if (socket.handshake.query && socket.handshake.query.token) {
-    const token = socket.handshake.query.token;
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) return next(new Error("Authentication error"));
-      socket.decoded = decoded;
-      next();
-    });
-  } else {
-    next(new Error("Authentication error"));
+  // Check both auth and query for token
+  const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+
+  if (!token) {
+    console.log("No token found in socket connection");
+    return next(new Error("Authentication error: No token provided"));
   }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.log("Token verification failed:", err.message);
+      return next(new Error("Authentication error: Invalid token"));
+    }
+
+    console.log("Token verified successfully for user:", decoded.id);
+    socket.decoded = decoded;
+    next();
+  });
 });
 
 // Connect to MongoDB
@@ -84,8 +100,10 @@ app.use("/api/accounts", authenticateJWT, accountRoutes);
 app.use("/api/job-types", authenticateJWT, jobTypeRoutes);
 app.use("/api/job-postings", authenticateJWT, jobPostingRoutes);
 app.use("/api/chats", authenticateJWT, chatRoutes);
-app.use("/api/messages", authenticateJWT, messageRoutes);
 app.use("/api/analytics", authenticateJWT, analyticsRoutes);
+
+//no route prefix for message routes
+app.use("/api", authenticateJWT, messageRoutes);
 
 // Set up socket handler
 socketHandler(io);

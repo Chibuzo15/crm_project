@@ -14,6 +14,15 @@ import SearchBar from "./SearchBar";
 import Filters from "./Filters";
 import ChatSidebar from "./ChatSidebar";
 import socket from "../../utils/socket";
+import {
+  CHAT_UPDATED,
+  JOIN_USER_CHANNEL,
+  MESSAGES_READ,
+  NEW_MESSAGE,
+  SOCKET_DISCONNECT,
+  STOP_TYPING,
+  TYPING,
+} from "../../utils/socketEvents";
 
 const Unibox = () => {
   const dispatch = useDispatch();
@@ -80,26 +89,38 @@ const Unibox = () => {
   useEffect(() => {
     socketRef.current = socket;
 
+    // Set the authentication token
+    if (token) {
+      socketRef.current.setToken(token);
+    }
+
     // Connect with authentication
     socketRef.current.connect();
 
     // Join user's room for all notifications
     if (user && user._id) {
-      socketRef.current.emit("join", { userId: user._id });
+      socketRef.current.emit(JOIN_USER_CHANNEL, { userId: user._id });
     }
 
+    socketRef.current.on(MESSAGES_READ, (data) => {
+      // Handle messages read
+      console.log("messages read ", data);
+      refetchChats();
+    });
+
     // Listen for new messages and other events
-    socketRef.current.on("new_message", (message) => {
+    socketRef.current.on(NEW_MESSAGE, (message) => {
+      console.log("new message ", message);
       // Refetch chats to get the updated list with new messages
       refetchChats();
     });
 
-    socketRef.current.on("chat_updated", () => {
+    socketRef.current.on(CHAT_UPDATED, (data) => {
       // Refetch chats when any chat is updated
       refetchChats();
     });
 
-    socketRef.current.on("disconnect", () => {
+    socketRef.current.on(SOCKET_DISCONNECT, () => {
       console.log("Disconnected from socket server");
     });
 
@@ -154,7 +175,7 @@ const Unibox = () => {
 
     try {
       const messageData = {
-        chatId: currentChat._id,
+        chat: currentChat._id,
         content,
         attachments,
       };
@@ -162,10 +183,7 @@ const Unibox = () => {
       await sendMessage(messageData).unwrap();
 
       // Emit typing stopped event
-      socketRef.current?.emit("stop_typing", {
-        chatId: currentChat._id,
-        userId: user._id,
-      });
+      socketRef.current?.emit(STOP_TYPING, currentChat._id);
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -175,10 +193,7 @@ const Unibox = () => {
   const handleTyping = () => {
     if (!currentChat) return;
 
-    socketRef.current?.emit("typing", {
-      chatId: currentChat._id,
-      userId: user._id,
-    });
+    socketRef.current?.emit(TYPING, currentChat._id);
   };
 
   // Handle sidebar toggle

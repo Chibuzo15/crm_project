@@ -3,6 +3,9 @@ const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 const mongoose = require("mongoose");
 
+const socketInstance = require("../socket/socketInstance");
+const { CHAT_UPDATED } = require("../utils/socketEvents");
+
 exports.getChats = async (req, res) => {
   try {
     const {
@@ -197,6 +200,10 @@ exports.updateChat = async (req, res) => {
     if (!chat) {
       return res.status(404).json({ message: "Chat not found" });
     }
+
+    // Get io instance and emit event
+    const io = socketInstance.getIO();
+    io.to(chat?._id).emit(CHAT_UPDATED, { chatId: chat?._id });
 
     res.json(chat);
   } catch (error) {
