@@ -428,10 +428,10 @@ export const api = createApi({
     }),
 
     updateChat: builder.mutation({
-      query: ({ id, chatData }) => ({
+      query: ({ id, updates }) => ({
         url: `/chats/${id}`,
         method: "PUT",
-        body: chatData,
+        body: updates,
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "Chat", id },
@@ -495,7 +495,7 @@ export const api = createApi({
         }
 
         return {
-          url: `/chats/${chatId}/messages/attachment`,
+          url: `/chats/${chatId}/messages`,
           method: "POST",
           body: formData,
         };

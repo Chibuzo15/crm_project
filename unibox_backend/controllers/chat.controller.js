@@ -31,19 +31,20 @@ exports.getChats = async (req, res) => {
       ];
     }
 
-    if (platform) {
-      filter.platform = mongoose.Types.ObjectId(platform);
+    //
+    if (platform && platform.trim() !== "") {
+      filter.platform = new mongoose.Types.ObjectId(platform);
     }
 
-    if (platformAccount) {
-      filter.platformAccount = mongoose.Types.ObjectId(platformAccount);
+    if (platformAccount && platformAccount.trim() !== "") {
+      filter.platformAccount = new mongoose.Types.ObjectId(platformAccount);
     }
 
-    if (jobType) {
-      filter.jobType = mongoose.Types.ObjectId(jobType);
+    if (jobType && jobType.trim() !== "") {
+      filter.jobType = new mongoose.Types.ObjectId(jobType);
     }
 
-    if (status) {
+    if (status && status.trim() !== "") {
       filter.status = status;
     }
 
@@ -51,8 +52,8 @@ exports.getChats = async (req, res) => {
       filter.followUpDate = { $lte: new Date() };
     }
 
-    if (jobPosting) {
-      filter.jobPosting = mongoose.Types.ObjectId(jobPosting);
+    if (jobPosting && jobPosting.trim() !== "") {
+      filter.jobPosting = new mongoose.Types.ObjectId(jobPosting);
     }
 
     // Get chats with populated references and latest message
@@ -166,31 +167,21 @@ exports.createChat = async (req, res) => {
 
 exports.updateChat = async (req, res) => {
   try {
-    const {
-      jobPosting,
-      jobType,
-      candidateName,
-      status,
-      followUpInterval,
-      notes,
-      followUpDate,
-    } = req.body;
-
-    // Fields that can be updated
     const updateFields = {};
 
-    if (jobPosting !== undefined) updateFields.jobPosting = jobPosting;
-    if (jobType !== undefined) updateFields.jobType = jobType;
-    if (candidateName !== undefined) updateFields.candidateName = candidateName;
-    if (status !== undefined) updateFields.status = status;
-    if (followUpInterval !== undefined)
-      updateFields.followUpInterval = followUpInterval;
-    if (notes !== undefined) updateFields.notes = notes;
-    if (followUpDate !== undefined)
-      updateFields.followUpDate = new Date(followUpDate);
+    console.log(" req ", req.body);
+
+    // Dynamically add fields from request body
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] !== undefined) {
+        updateFields[key] =
+          key === "followUpDate" ? new Date(req.body[key]) : req.body[key];
+      }
+    });
 
     const chat = await Chat.findByIdAndUpdate(req.params.id, updateFields, {
       new: true,
+      runValidators: true,
     })
       .populate("platform", "name")
       .populate("platformAccount", "username")
@@ -208,10 +199,9 @@ exports.updateChat = async (req, res) => {
     res.json(chat);
   } catch (error) {
     console.error("Error in updateChat:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 exports.deleteChat = async (req, res) => {
   try {
     const chat = await Chat.findById(req.params.id);

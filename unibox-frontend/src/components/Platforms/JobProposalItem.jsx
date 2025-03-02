@@ -5,7 +5,7 @@ import { useSyncUpworkJobProposalMutation } from "../../store/api";
 import moment from "moment";
 import { Link } from "react-router-dom";
 
-const JobProposalItem = ({ proposal }) => {
+const JobProposalItem = ({ proposal, onSyncSuccess }) => {
   const { upworkProposalsFilter } = useSelector((state) => state.jobPosting);
 
   // Replace dispatch(syncUpworkJobProposal()) with RTK Query mutation
@@ -16,10 +16,17 @@ const JobProposalItem = ({ proposal }) => {
     if (!proposal || !upworkProposalsFilter.accountId) return;
 
     try {
-      await syncProposal({
+      const result = await syncProposal({
         accountId: upworkProposalsFilter.accountId,
         proposalId: proposal.id,
       }).unwrap();
+
+      console.log("result ", result);
+
+      // Call the parent's onSyncSuccess callback to trigger chat refetch
+      if (onSyncSuccess) {
+        onSyncSuccess(result.chat?._id);
+      }
     } catch (err) {
       console.error("Failed to sync proposal:", err);
     }
@@ -30,6 +37,8 @@ const JobProposalItem = ({ proposal }) => {
     return moment(dateString).fromNow();
   };
 
+  console.log("proposal ", proposal);
+
   return (
     <div
       className={`bg-white border rounded-lg overflow-hidden shadow hover:shadow-md transition-shadow ${
@@ -39,7 +48,7 @@ const JobProposalItem = ({ proposal }) => {
       <div className="p-4">
         <div className="flex justify-between items-start">
           <h3 className="text-lg font-semibold truncate">
-            {proposal.jobTitle}
+            Job: {proposal.jobTitle}
           </h3>
           {proposal.isSynced ? (
             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
@@ -126,10 +135,10 @@ const JobProposalItem = ({ proposal }) => {
           </span>
 
           <Link
-            href={`/unibox?jobPostingId=${proposal.jobPostingId}`}
+            to={`/unibox/${proposal.chatId}`}
             className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
           >
-            View Chats
+            View Chat
             <svg
               className="w-4 h-4 ml-1"
               fill="none"

@@ -3,30 +3,41 @@ const express = require("express");
 const router = express.Router();
 const jobTypeController = require("../controllers/jobType.controller");
 const { validateJobType } = require("../middleware/validators");
+const { authenticateJWT } = require("../middleware/auth.middleware");
 
 // @route   GET /api/job-types
 // @desc    Get all job types
 // @access  Private
-router.get("/", jobTypeController.getAllJobTypes);
+router.get("/", authenticateJWT, jobTypeController.getAllJobTypes);
 
 // @route   GET /api/job-types/:id
 // @desc    Get a job type by ID
 // @access  Private
-router.get("/:id", jobTypeController.getJobTypeById);
+router.get("/:id", authenticateJWT, jobTypeController.getJobTypeById);
 
 // @route   POST /api/job-types
 // @desc    Create a new job type
 // @access  Private
-router.post("/", validateJobType, jobTypeController.createJobType);
+router.post(
+  "/",
+  authenticateJWT,
+  validateJobType,
+  jobTypeController.createJobType
+);
 
 // @route   PUT /api/job-types/:id
 // @desc    Update a job type
 // @access  Private
-router.put("/:id", validateJobType, jobTypeController.updateJobType);
+router.put(
+  "/:id",
+  authenticateJWT,
+  validateJobType,
+  jobTypeController.updateJobType
+);
 
 // @route   DELETE /api/job-types/:id
 // @desc    Delete a job type
 // @access  Private
-router.delete("/:id", jobTypeController.deleteJobType);
+router.delete("/:id", authenticateJWT, jobTypeController.deleteJobType);
 
 module.exports = router;

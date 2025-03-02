@@ -61,6 +61,7 @@ const JobPostingSchema = new mongoose.Schema(
         proposal: String, // Their message/proposal content
         date: Date, // When they submitted the proposal
         isSynced: Boolean, // Whether a chat has been created for this proposal
+        syncedAt: Date, // When the proposal was synced to create a chat
       },
     ],
   },

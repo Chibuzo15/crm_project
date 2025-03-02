@@ -11,10 +11,6 @@ import {
 } from "../../store/authSlice";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [formError, setFormError] = useState("");
-
   const [validationErrors, setValidationErrors] = useState({});
 
   const dispatch = useDispatch();

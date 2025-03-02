@@ -14,7 +14,16 @@ const MessageSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: true,
+      validate: {
+        validator: function (v) {
+          // Content is required only if there are no attachments
+          return !(
+            v === "" &&
+            (!this.attachments || this.attachments.length === 0)
+          );
+        },
+        message: (props) => "Message must have either content or attachments",
+      },
     },
     isFromUs: {
       type: Boolean,

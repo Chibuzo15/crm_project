@@ -333,6 +333,35 @@ exports.getUpworkJobProposals = async (req, res) => {
       platformAccount: accountId,
     }).populate("jobType", "title");
 
+    /**
+     * implementation to get chat id of each proposal; if available
+     */
+    // First, gather all candidateUsernames we need to look up
+    const candidateUsernames = [];
+    const platformIds = new Set();
+
+    jobPostings.forEach((posting) => {
+      if (posting.candidates && posting.candidates.length > 0) {
+        platformIds.add(posting.platform.toString());
+        posting.candidates.forEach((candidate) => {
+          candidateUsernames.push(candidate.username);
+        });
+      }
+    });
+
+    // Find all chats for these candidates
+    const chats = await Chat.find({
+      platform: { $in: Array.from(platformIds) },
+      candidateUsername: { $in: candidateUsernames },
+    });
+
+    // Create a lookup map for quick access
+    const chatLookup = {};
+    chats.forEach((chat) => {
+      // Use candidateUsername as the key
+      chatLookup[chat.candidateUsername] = chat._id;
+    });
+
     // Extract all candidates from job postings
     let proposals = [];
 
@@ -351,9 +380,17 @@ exports.getUpworkJobProposals = async (req, res) => {
             proposal: candidate.proposal,
             date: candidate.date,
             isSynced: candidate.isSynced,
+            syncedAt: candidate.syncedAt,
+            chatId: chatLookup[candidate.username] || null, // Add the chatId if it exists
           }))
         );
       }
+    });
+
+    proposals.sort((a, b) => {
+      if (!a.date) return 1; // Move items without dates to the end
+      if (!b.date) return -1; // Move items without dates to the end
+      return new Date(b.date) - new Date(a.date);
     });
 
     return res.status(200).json(proposals);
@@ -402,8 +439,6 @@ exports.syncUpworkJobProposal = async (req, res) => {
       platformAccount: accountId,
       "candidates.externalId": proposalId,
     }).populate("jobType");
-
-    console.log("req.biody ", req.body);
 
     if (!jobPosting) {
       return res.status(400).json({
@@ -471,6 +506,8 @@ exports.syncUpworkJobProposal = async (req, res) => {
 
     // Mark the candidate as synced
     candidate.isSynced = true;
+    candidate.syncedAt = new Date();
+
     await jobPosting.save();
 
     return res.status(200).json({
@@ -512,6 +549,10 @@ exports.addMockUpworkProposals = async (req, res) => {
       "Michael Wong",
       "Emma Davis",
       "Robert Chen",
+      "Jet Li",
+      "Jackie Chan",
+      "Warrior Wukong",
+      "Mighty Thor",
     ];
     const proposals = [
       "Hello, I'm very interested in this position and have 5+ years of relevant experience.",

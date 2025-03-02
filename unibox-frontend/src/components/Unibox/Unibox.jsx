@@ -37,6 +37,7 @@ const Unibox = () => {
   // State for chat filters and search
   const [filters, setFilters] = useState({
     platform: "",
+    platformAccount: "",
     jobType: "",
     status: "",
     followUp: false,
@@ -50,6 +51,7 @@ const Unibox = () => {
   const {
     data: chats = [],
     isLoading: isLoadingChats,
+    isError: chatsError,
     refetch: refetchChats,
   } = useGetChatsQuery({
     ...filters,
@@ -104,7 +106,7 @@ const Unibox = () => {
 
     socketRef.current.on(MESSAGES_READ, (data) => {
       // Handle messages read
-      console.log("messages read ", data);
+      // console.log("messages read ", data);
       refetchChats();
     });
 
@@ -170,24 +172,26 @@ const Unibox = () => {
   };
 
   // Handle sending a message
-  const handleSendMessage = async (content, attachments = []) => {
-    if (!currentChat) return;
+  // const handleSendMessage = async (content, attachments = []) => {
+  //   if (!currentChat) return;
 
-    try {
-      const messageData = {
-        chat: currentChat._id,
-        content,
-        attachments,
-      };
+  //   try {
+  //     const messageData = {
+  //       chat: currentChat._id,
+  //       content,
+  //       attachments,
+  //     };
 
-      await sendMessage(messageData).unwrap();
+  //     console.log("messageData ", messageData);
 
-      // Emit typing stopped event
-      socketRef.current?.emit(STOP_TYPING, currentChat._id);
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    }
-  };
+  //     await sendMessage(messageData).unwrap();
+
+  //     // Emit typing stopped event
+  //     socketRef.current?.emit(STOP_TYPING, currentChat._id);
+  //   } catch (error) {
+  //     console.error("Failed to send message:", error);
+  //   }
+  // };
 
   // Handle typing indication
   const handleTyping = () => {
@@ -206,10 +210,13 @@ const Unibox = () => {
     if (!currentChat) return;
 
     try {
-      await updateChat({
+      const result = await updateChat({
         id: currentChat._id,
-        [field]: value,
+        updates: { [field]: value },
       }).unwrap();
+
+      // Update the current chat state with the returned updated chat
+      setCurrentChat(result);
     } catch (error) {
       console.error(`Failed to update ${field}:`, error);
     }
@@ -227,13 +234,14 @@ const Unibox = () => {
           <SearchBar onSearch={handleSearch} value={searchTerm} />
         </div>
 
-        <div className="p-4 border-y border-gray-200">
+        <div className="p-4 border-y border-gray-200 relative">
           <Filters filters={filters} onFilterChange={handleFilterChange} />
         </div>
 
         <div className="flex-1 overflow-y-auto">
           <ChatList
             chats={chats}
+            error={chatsError}
             loading={isLoadingChats}
             selectedChatId={currentChat?._id}
             onChatSelect={handleChatSelect}
@@ -247,7 +255,7 @@ const Unibox = () => {
           <ChatDetail
             chat={currentChat}
             socket={socketRef.current}
-            onSendMessage={handleSendMessage}
+            // onSendMessage={handleSendMessage}
             onTyping={handleTyping}
             isLoading={isLoadingChatFromId}
             isSending={isSendingMessage}

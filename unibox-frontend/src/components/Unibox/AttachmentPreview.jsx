@@ -4,6 +4,9 @@ import React from "react";
 const AttachmentPreview = ({ attachment }) => {
   const { filename, mimetype, path, originalName, size } = attachment;
 
+  const FILE_URL =
+    import.meta.env.VITE_FILE_URL || "http://localhost:5000/uploads";
+
   // Format file size to human-readable
   const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 B";
@@ -25,11 +28,29 @@ const AttachmentPreview = ({ attachment }) => {
     mimetype?.startsWith("image/") || attachment.type?.startsWith("image/");
 
   // Build file URL (handle both client-side preview URLs and server paths)
-  const fileUrl = path?.startsWith("http")
-    ? path
-    : path
-    ? `/uploads/${path}`
-    : attachment.preview || "";
+  const isLocalPreview = attachment.preview && attachment.file;
+  const fileUrl = (() => {
+    // For local preview
+    if (isLocalPreview) return attachment.preview;
+
+    // For server-side images
+    if (attachment.filename) {
+      return `${FILE_URL}/${attachment.filename}`;
+    }
+
+    // Fallback
+    return attachment.path || "";
+  })();
+
+  const handleImageLoadError = (e) => {
+    // console.error("Failed to load image:", e);
+    console.error("Image load error:", {
+      src: e.target.src,
+      error: e.type,
+      naturalWidth: e.target.naturalWidth,
+      complete: e.target.complete,
+    });
+  };
 
   // File icon SVG based on file type
   const renderFileIcon = () => {
@@ -146,6 +167,7 @@ const AttachmentPreview = ({ attachment }) => {
           <img
             src={fileUrl}
             alt={displayName}
+            onError={handleImageLoadError}
             className="max-h-40 max-w-full rounded object-contain"
           />
         </a>

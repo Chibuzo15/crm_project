@@ -24,27 +24,34 @@ const storage = multer.diskStorage({
   },
 });
 
+// List of allowed file types
+const allowedTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/zip",
+  "application/x-rar-compressed",
+  "text/plain",
+];
+
 // File filter function to validate file types
 const fileFilter = (req, file, cb) => {
-  // List of allowed file types
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/zip",
-    "application/x-rar-compressed",
-    "text/plain",
-  ];
-
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("File type not allowed"), false);
+    cb(
+      new Error(
+        `File type not allowed. Allowed types: ${allowedTypes
+          .map((type) => type.split("/")[1])
+          .join(", ")}`
+      ),
+      false
+    );
   }
 };
 
@@ -57,4 +64,47 @@ const upload = multer({
   },
 });
 
-module.exports = upload;
+// Create a custom middleware to handle multer errors
+const handleUpload = (fieldName, maxCount = 5) => {
+  return (req, res, next) => {
+    const uploadMiddleware = upload.array(fieldName, maxCount);
+
+    uploadMiddleware(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading
+          if (err.code === "LIMIT_FILE_SIZE") {
+            return res.status(400).json({
+              error: true,
+              message: `File too large. Maximum size is 10MB.`,
+            });
+          } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+            return res.status(400).json({
+              error: true,
+              message: `Too many files uploaded. Maximum is ${maxCount}.`,
+            });
+          } else {
+            return res.status(400).json({
+              error: true,
+              message: `Upload error: ${err.message}`,
+            });
+          }
+        } else {
+          // An unknown error occurred
+          return res.status(400).json({
+            error: true,
+            message: err.message || "Unknown error during file upload.",
+          });
+        }
+      }
+      // If no error, continue to the next middleware
+      next();
+    });
+  };
+};
+
+module.exports = {
+  upload,
+  handleUpload,
+  allowedTypes,
+};

@@ -2,13 +2,16 @@ import React from "react";
 import Message from "./Message";
 
 const MessageList = ({ messages, loading, messagesEndRef }) => {
-  // Group messages by date
   const groupMessagesByDate = () => {
     const groups = {};
 
     messages.forEach((message) => {
-      const date = new Date(message.timestamp);
-      const dateStr = date.toLocaleDateString();
+      const date = new Date(message.createdAt);
+      const dateStr = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
 
       if (!groups[dateStr]) {
         groups[dateStr] = [];
@@ -17,7 +20,17 @@ const MessageList = ({ messages, loading, messagesEndRef }) => {
       groups[dateStr].push(message);
     });
 
-    return groups;
+    // Sort the groups chronologically
+    const sortedGroups = {};
+    Object.keys(groups)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .forEach((key) => {
+        sortedGroups[key] = groups[key].sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      });
+
+    return sortedGroups;
   };
 
   const messageGroups = groupMessagesByDate();

@@ -33,19 +33,21 @@ const socketHandler = require("./socket/socketHandler");
 // Import middleware
 const { authenticateJWT } = require("./middleware/auth.middleware");
 
+const CORS_OPTS = {
+  origin: [
+    process.env.CLIENT_URL,
+    "http://localhost:5173",
+    "http://localhost:5174",
+  ],
+  methods: ["GET", "POST", "PUT"],
+  credentials: true,
+};
+
 // Initialize express app
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
-  cors: {
-    origin: [
-      process.env.CLIENT_URL,
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: CORS_OPTS,
 });
 
 // Initialize socket instance for use across the application
@@ -83,14 +85,24 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Middleware
-app.use(cors());
+app.use(cors(CORS_OPTS));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // Static folder for uploads
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    // Add CORS headers specifically for uploads
+    res.header("Access-Control-Allow-Origin", CORS_OPTS.origin);
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // Routes
 app.use("/api/auth", authRoutes);

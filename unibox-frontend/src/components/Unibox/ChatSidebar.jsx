@@ -11,7 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 const ChatSidebar = ({ chat, onUpdate }) => {
   // Use RTK Query hooks instead of using useSelector for these
   const { data: jobTypes = [] } = useGetJobTypesQuery();
-  const { data: platforms = [] } = useGetPlatformsQuery();
+  // const { data: platforms = [] } = useGetPlatformsQuery();
 
   // Use updateChat mutation instead of dispatch
   const [updateChat, { isLoading: isUpdating }] = useUpdateChatMutation();
@@ -28,6 +28,14 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     chat.followUpInterval || 2
   );
 
+  React.useEffect(() => {
+    setNotes(chat.notes || "");
+    setStatus(chat.status || "");
+    setJobTypeId(chat.jobType?._id || chat.jobType || "");
+    setFollowUpDate(chat.followUpDate ? new Date(chat.followUpDate) : null);
+    setFollowUpInterval(chat.followUpInterval || 2);
+  }, [chat]);
+
   const handleNotesChange = (e) => {
     setNotes(e.target.value);
   };
@@ -35,10 +43,10 @@ const ChatSidebar = ({ chat, onUpdate }) => {
   const handleNotesBlur = async () => {
     if (notes !== chat.notes) {
       try {
-        await updateChat({
-          id: chat._id,
-          updates: { notes },
-        }).unwrap();
+        // await updateChat({
+        //   id: chat._id,
+        //   updates: { notes },
+        // }).unwrap();
 
         onUpdate("notes", notes);
       } catch (error) {
@@ -52,10 +60,10 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     setStatus(newStatus);
 
     try {
-      await updateChat({
-        id: chat._id,
-        updates: { status: newStatus },
-      }).unwrap();
+      // await updateChat({
+      //   id: chat._id,
+      //   updates: { status: newStatus },
+      // }).unwrap();
 
       onUpdate("status", newStatus);
     } catch (error) {
@@ -68,10 +76,10 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     setJobTypeId(newJobTypeId);
 
     try {
-      await updateChat({
-        id: chat._id,
-        updates: { jobType: newJobTypeId },
-      }).unwrap();
+      // await updateChat({
+      //   id: chat._id,
+      //   updates: { jobType: newJobTypeId },
+      // }).unwrap();
 
       onUpdate("jobType", newJobTypeId);
     } catch (error) {
@@ -83,10 +91,10 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     setFollowUpDate(date);
 
     try {
-      await updateChat({
-        id: chat._id,
-        updates: { followUpDate: date },
-      }).unwrap();
+      // await updateChat({
+      //   id: chat._id,
+      //   updates: { followUpDate: date },
+      // }).unwrap();
 
       onUpdate("followUpDate", date);
     } catch (error) {
@@ -99,10 +107,10 @@ const ChatSidebar = ({ chat, onUpdate }) => {
     setFollowUpInterval(newInterval);
 
     try {
-      await updateChat({
-        id: chat._id,
-        updates: { followUpInterval: newInterval },
-      }).unwrap();
+      // await updateChat({
+      //   id: chat._id,
+      //   updates: { followUpInterval: newInterval },
+      // }).unwrap();
 
       onUpdate("followUpInterval", newInterval);
     } catch (error) {
@@ -141,8 +149,8 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         <select
           value={jobTypeId}
           onChange={handleJobTypeChange}
-          disabled={isUpdating}
-          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={true}
+          className="w-full bg-gray-100 px-3 py-2 border border-0 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Job Type</option>
           {jobTypes?.map((type) => (

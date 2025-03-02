@@ -102,9 +102,20 @@ exports.validateChatUpdate = [
   handleValidation,
 ];
 
-// Validation for message
+// Validation for message - allowing empty content if attachments are present
 exports.validateMessage = [
-  body("content").notEmpty().withMessage("Message content is required"),
+  body("content").custom((value, { req }) => {
+    // Message content can be empty if files are attached
+    if (
+      (!value || value.trim() === "") &&
+      (!req.files || req.files.length === 0)
+    ) {
+      throw new Error(
+        "Message content is required when no attachments are present"
+      );
+    }
+    return true;
+  }),
   handleValidation,
 ];
 

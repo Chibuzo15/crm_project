@@ -8,7 +8,7 @@ import {
   useSendMessageWithAttachmentMutation,
 } from "../../store/api";
 
-const ChatDetail = ({ chat, onSendMessage, socket }) => {
+const ChatDetail = ({ chat, socket }) => {
   const messagesEndRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
 
@@ -41,9 +41,22 @@ const ChatDetail = ({ chat, onSendMessage, socket }) => {
 
   const handleSendMessage = async (content) => {
     if (content.trim() === "" && attachments.length === 0) return;
+    console.log("content ", content);
 
     try {
       if (attachments.length > 0) {
+        // Check file size before upload
+        const oversizedFiles = attachments.filter(
+          (attachment) =>
+            attachment.file && attachment.file.size > 3 * 1024 * 1024
+        );
+
+        if (oversizedFiles.length > 0) {
+          console.error("Some files exceed the 3MB limit");
+          alert("MAX file size is 3MB");
+          return;
+        }
+
         // If there are attachments, use the attachment endpoint
         await sendMessageWithAttachment({
           chatId: chat._id,

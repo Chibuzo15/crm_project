@@ -5,6 +5,7 @@ import {
   useGetPlatformAccountsQuery,
   useSyncUpworkJobProposalMutation,
   useGetPlatformsQuery,
+  useGetChatsQuery,
 } from "../../store/api";
 import { setUpworkProposalsFilter } from "../../store/jobPostingSlice";
 import JobProposalItem from "./JobProposalItem";
@@ -48,6 +49,12 @@ const UpworkJobProposals = () => {
     { skip: !upworkProposalsFilter.accountId }
   );
 
+  // Add a reference to the chat refetch function
+  const { refetch: refetchChats } = useGetChatsQuery(
+    {}, // Empty filter to match the pattern used in Unibox
+    { skip: false } // Don't skip so we have access to refetch
+  );
+
   // Sync mutation
   const [syncProposal, { isLoading: isSyncing }] =
     useSyncUpworkJobProposalMutation();
@@ -62,6 +69,11 @@ const UpworkJobProposals = () => {
     dispatch(setUpworkProposalsFilter({ status }));
   };
 
+  const handleSyncSuccess = (chatId) => {
+    // Refetch chats when a sync succeeds
+    refetchChats();
+  };
+
   const handleSyncAll = async () => {
     if (!proposals || !upworkProposalsFilter.accountId) return;
 
@@ -72,7 +84,15 @@ const UpworkJobProposals = () => {
             accountId: upworkProposalsFilter.accountId,
             proposalId: proposal.id,
           }).unwrap();
+
+          // Mark that at least one sync occurred
+          syncedAny = true;
         }
+      }
+
+      // If any proposals were synced, refetch the proposals and chats
+      if (syncedAny) {
+        handleSyncSuccess();
       }
     } catch (err) {
       console.error("Failed to sync all proposals:", err);
@@ -271,7 +291,11 @@ const UpworkJobProposals = () => {
         filteredProposals.length > 0 && (
           <div className="grid grid-cols-1  gap-4 mt-4">
             {filteredProposals.map((proposal) => (
-              <JobProposalItem key={proposal.id} proposal={proposal} />
+              <JobProposalItem
+                key={proposal.id}
+                proposal={proposal}
+                onSyncSuccess={handleSyncSuccess}
+              />
             ))}
           </div>
         )}

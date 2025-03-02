@@ -5,6 +5,7 @@ const SearchBar = ({ onSearch }) => {
 
   const handleChange = (e) => {
     setQuery(e.target.value);
+    onSearch(e.target.value);
   };
 
   const handleSubmit = (e) => {
