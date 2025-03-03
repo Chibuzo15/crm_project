@@ -1,11 +1,29 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Message from "./Message";
 
 const MessageList = ({ messages, loading, messagesEndRef }) => {
+  // Function to ensure unique messages by checking _id
+  const uniqueMessages = useMemo(() => {
+    if (!messages || messages.length === 0) return [];
+
+    // Use a Map to track unique messages by _id
+    const uniqueMap = new Map();
+
+    // Only add a message if its _id hasn't been seen before
+    messages.forEach((message) => {
+      if (message._id && !uniqueMap.has(message._id)) {
+        uniqueMap.set(message._id, message);
+      }
+    });
+
+    // Convert Map values back to array
+    return Array.from(uniqueMap.values());
+  }, [messages]);
+
   const groupMessagesByDate = () => {
     const groups = {};
 
-    messages.forEach((message) => {
+    uniqueMessages.forEach((message) => {
       const date = new Date(message.createdAt);
       const dateStr = date.toLocaleDateString("en-US", {
         year: "numeric",
@@ -46,7 +64,7 @@ const MessageList = ({ messages, loading, messagesEndRef }) => {
     );
   }
 
-  if (!messages || messages.length === 0) {
+  if (!uniqueMessages.length) {
     return (
       <div className="h-full flex items-center justify-center p-4">
         <div className="text-center max-w-md">
