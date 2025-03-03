@@ -17,15 +17,15 @@ const ActivityDashboard = () => {
   const { error } = useSelector((state) => state.analytics);
   // const users = useSelector((state) => state.user.users);
 
-  const [dateRange, setDateRange] = useState([
-    new Date(new Date().setDate(new Date().getDate() - 30)), // 30 days ago
-    new Date(), // Today
-  ]);
-  const [startDate, endDate] = dateRange;
+  const [startDate, setStartDate] = useState(
+    new Date(new Date().setDate(new Date().getDate() - 30))
+  );
+  const [endDate, setEndDate] = useState(new Date());
   const [selectedUser, setSelectedUser] = useState("all");
 
   const { data: users, isLoading: usersLoading } = useGetUsersQuery({});
 
+  console.log("endDate ", endDate);
   // Use RTK Query hooks
   const {
     data: userActivity = [],
@@ -47,17 +47,17 @@ const ActivityDashboard = () => {
     userId: selectedUser !== "all" ? selectedUser : undefined,
   });
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      dispatch(
-        fetchUserActivity({
-          startDate: startDate.toISOString().split("T")[0],
-          endDate: endDate.toISOString().split("T")[0],
-          userId: selectedUser !== "all" ? selectedUser : undefined,
-        })
-      );
-    }
-  }, [dispatch, startDate, endDate, selectedUser]);
+  // useEffect(() => {
+  //   if (startDate && endDate) {
+  //     dispatch(
+  //       fetchUserActivity({
+  //         startDate: startDate.toISOString().split("T")[0],
+  //         endDate: endDate.toISOString().split("T")[0],
+  //         userId: selectedUser !== "all" ? selectedUser : undefined,
+  //       })
+  //     );
+  //   }
+  // }, [dispatch, startDate, endDate, selectedUser]);
 
   const handleUserChange = (e) => {
     setSelectedUser(e.target.value);
@@ -71,6 +71,8 @@ const ActivityDashboard = () => {
         onTimePercentage: 0,
         avgMessagesPerDay: 0,
         totalChats: 0,
+        messagesPerDayOnTime: 0,
+        messagesPerDayOffTime: 0,
       };
     }
 
@@ -82,6 +84,10 @@ const ActivityDashboard = () => {
       (sum, day) => sum + (day.messagesOnTime || 0),
       0
     );
+    const offTimeMessages = userActivity.reduce(
+      (sum, day) => sum + (day.messagesOffTime || 0),
+      0
+    );
     const onTimePercentage =
       totalMessages > 0
         ? Math.round((onTimeMessages / totalMessages) * 100)
@@ -90,6 +96,10 @@ const ActivityDashboard = () => {
     const days = userActivity.length;
     const avgMessagesPerDay =
       days > 0 ? Math.round((totalMessages / days) * 10) / 10 : 0;
+    const messagesPerDayOnTime =
+      days > 0 ? Math.round((onTimeMessages / days) * 10) / 10 : 0;
+    const messagesPerDayOffTime =
+      days > 0 ? Math.round((offTimeMessages / days) * 10) / 10 : 0;
 
     // Count unique chats
     const uniqueChats = new Set();
@@ -102,6 +112,8 @@ const ActivityDashboard = () => {
       onTimePercentage,
       avgMessagesPerDay,
       totalChats: uniqueChats.size,
+      messagesPerDayOnTime,
+      messagesPerDayOffTime,
     };
   };
 
@@ -119,16 +131,26 @@ const ActivityDashboard = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Date Range:
             </label>
-            <DatePicker
-              selectsRange={true}
-              startDate={startDate}
-              endDate={endDate}
-              onChange={(update) => {
-                setDateRange(update);
-              }}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              dateFormat="yyyy-MM-dd"
-            />
+            <div className="flex space-x-2">
+              <div className="flex">
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  placeholderText="Start Date"
+                  className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+              <div className="flex">
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  placeholderText="End Date"
+                  className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+            </div>
           </div>
 
           <div>

@@ -1,8 +1,14 @@
 import React from "react";
 
 const MetricsCards = ({ metrics }) => {
-  const { totalMessages, onTimePercentage, avgMessagesPerDay, totalChats } =
-    metrics;
+  const {
+    totalMessages,
+    onTimePercentage,
+    avgMessagesPerDay,
+    totalChats,
+    messagesPerDayOnTime,
+    messagesPerDayOffTime,
+  } = metrics;
 
   // Get color class for percentage
   const getPercentageColor = (percentage) => {
@@ -47,6 +53,28 @@ const MetricsCards = ({ metrics }) => {
           </div>
           <div className="text-3xl font-bold text-gray-900">
             {avgMessagesPerDay.toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-5 rounded-lg shadow-sm">
+        <div className="flex flex-col">
+          <div className="text-sm font-medium text-gray-500 mb-1">
+            On-Time Msgs/Day
+          </div>
+          <div className="text-3xl font-bold text-green-600">
+            {messagesPerDayOnTime.toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-5 rounded-lg shadow-sm">
+        <div className="flex flex-col">
+          <div className="text-sm font-medium text-gray-500 mb-1">
+            Off-Time Msgs/Day
+          </div>
+          <div className="text-3xl font-bold text-red-600">
+            {messagesPerDayOffTime.toLocaleString()}
           </div>
         </div>
       </div>

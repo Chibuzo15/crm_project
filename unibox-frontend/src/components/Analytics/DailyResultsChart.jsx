@@ -19,8 +19,6 @@ const DailyResultsChart = ({ data }) => {
     );
   }
 
-  console.log("data ", data);
-
   // Format data for the chart
   const chartData = data.map((day) => ({
     date: day.date
