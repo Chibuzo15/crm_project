@@ -14,7 +14,7 @@ const jobPostingSlice = createSlice({
       platformAccountId: "",
       title: "",
       description: "",
-      status: "active",
+      status: "published",
       isRecurring: false,
       recurringDays: 7,
     },
@@ -45,7 +45,7 @@ const jobPostingSlice = createSlice({
         platformAccountId: "",
         title: "",
         description: "",
-        status: "active",
+        status: "published",
         isRecurring: false,
         recurringDays: 7,
       };

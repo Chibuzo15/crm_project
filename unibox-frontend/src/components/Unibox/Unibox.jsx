@@ -59,10 +59,13 @@ const Unibox = () => {
   });
 
   // Get chat by ID if chatId is present
-  const { data: chatFromId, isLoading: isLoadingChatFromId } =
-    useGetChatByIdQuery(chatId, {
-      skip: !chatId,
-    });
+  const {
+    data: chatFromId,
+    isLoading: isLoadingChatFromId,
+    refetch: refetchChatById,
+  } = useGetChatByIdQuery(chatId, {
+    skip: !chatId,
+  });
 
   // Send message mutation
   const [sendMessage, { isLoading: isSendingMessage }] =
@@ -118,22 +121,23 @@ const Unibox = () => {
       socketRef.current.emit(JOIN_USER_CHANNEL, { userId: user._id });
     }
 
-    socketRef.current.on(MESSAGES_READ, (data) => {
+    socketRef.current.on(MESSAGES_READ, async (data) => {
       // Handle messages read
-      // console.log("messages read ", data);
+      console.log("messages read ", data);
       refetchChats();
     });
 
     // Listen for new messages and other events
-    socketRef.current.on(NEW_MESSAGE, (message) => {
-      console.log("new message ", message);
-      // Refetch chats to get the updated list with new messages
-      refetchChats();
-    });
+    // socketRef.current.on(NEW_MESSAGE, (message) => {
+    //   console.log("new message ", message);
+    // Refetch chats to get the updated list with new messages
+    // refetchChats();
+    // });
 
     socketRef.current.on(CHAT_UPDATED, (data) => {
+      console.log("chat updated ", data);
       // Refetch chats when any chat is updated
-      refetchChats();
+      // refetchChats();
     });
 
     socketRef.current.on(SOCKET_DISCONNECT, () => {

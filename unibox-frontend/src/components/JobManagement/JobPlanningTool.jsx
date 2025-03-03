@@ -215,8 +215,9 @@ const JobPlanningTool = () => {
               className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archive</option>
               <option value="closed">Closed</option>
             </select>
           </div>
@@ -364,16 +365,14 @@ const JobPlanningTool = () => {
                         onClick={() => handleStatusToggle(jobPosting)}
                         disabled={isUpdatingStatus}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          jobPosting.status === "active"
+                          jobPosting.status === "published"
                             ? "bg-green-100 text-green-800"
-                            : jobPosting.status === "paused"
+                            : jobPosting.status === "draft"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {jobPosting.status === "active" && "Active"}
-                        {jobPosting.status === "paused" && "Paused"}
-                        {jobPosting.status === "closed" && "Closed"}
+                        {jobPosting.status}
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

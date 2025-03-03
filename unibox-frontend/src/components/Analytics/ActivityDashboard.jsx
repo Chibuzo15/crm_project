@@ -25,7 +25,6 @@ const ActivityDashboard = () => {
 
   const { data: users, isLoading: usersLoading } = useGetUsersQuery({});
 
-  console.log("endDate ", endDate);
   // Use RTK Query hooks
   const {
     data: userActivity = [],

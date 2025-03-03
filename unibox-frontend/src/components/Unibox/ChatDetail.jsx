@@ -7,17 +7,20 @@ import {
   useMarkMessagesAsReadMutation,
   useSendMessageWithAttachmentMutation,
 } from "../../store/api";
+import { NEW_MESSAGE } from "../../utils/socketEvents";
 
 const ChatDetail = ({ chat, socket, onUpdateChat }) => {
   const messagesEndRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
+
+  const [socketMessages, setSocketMessages] = useState([]);
 
   // Use RTK Query hooks instead of Redux actions
   const { data: messages = [], isLoading: loading } = useGetMessagesQuery(
     chat?._id,
     {
       skip: !chat?._id,
-      pollingInterval: 10000, // Poll for new messages every 10 seconds
+      // pollingInterval: 15000, // Poll for new messages every 15 seconds
     }
   );
 
@@ -28,16 +31,30 @@ const ChatDetail = ({ chat, socket, onUpdateChat }) => {
   const [sendMessageWithAttachment] = useSendMessageWithAttachmentMutation();
 
   // Mark messages as read when viewed
-  useEffect(() => {
-    if (chat && chat._id && chat.unreadCount > 0) {
-      markMessagesAsRead(chat._id);
-    }
-  }, [chat, markMessagesAsRead]);
+  // useEffect(() => {
+  // if (chat && chat._id && chat.unreadCount > 0) {
+  // markMessagesAsRead(chat._id);
+  //   }
+  // }, [chat, markMessagesAsRead]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Listen for new messages from socket
+  useEffect(() => {
+    if (socket) {
+      socket.on(NEW_MESSAGE, (message) => {
+        console.log("New message:", message);
+        setSocketMessages((prevMessages) => [...prevMessages, message]);
+      });
+
+      return () => {
+        socket.off(NEW_MESSAGE);
+      };
+    }
+  }, [socket]);
 
   const handleSendMessage = async (content) => {
     if (content.trim() === "" && attachments.length === 0) return;
@@ -119,7 +136,8 @@ const ChatDetail = ({ chat, socket, onUpdateChat }) => {
 
       <div className="flex-1 overflow-hidden bg-gray-50">
         <MessageList
-          messages={messages}
+          socket={socket}
+          messages={[...messages, ...socketMessages]}
           loading={loading}
           messagesEndRef={messagesEndRef}
         />

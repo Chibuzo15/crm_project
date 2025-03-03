@@ -366,8 +366,9 @@ const JobPostingPlatform = ({ jobPostingId, onSave, onCancel }) => {
                 disabled={isLoading}
                 className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+                <option value="archived">Archive</option>
                 <option value="closed">Closed</option>
               </select>
             </div>

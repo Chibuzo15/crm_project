@@ -189,8 +189,6 @@ exports.updateChat = async (req, res) => {
   try {
     const updateFields = {};
 
-    console.log(" req ", req.body);
-
     // Dynamically add fields from request body
     Object.keys(req.body).forEach((key) => {
       if (req.body[key] !== undefined) {
