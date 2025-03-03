@@ -1,10 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useGetPlatformByIdQuery } from "../../store/api";
 
 const PlatformAccountItem = ({ account, onEdit, onDelete }) => {
-  // Replace useSelector/useEffect with RTK Query hook
+  const navigate = useNavigate();
+
   const { data: platform, isLoading: platformLoading } =
-    useGetPlatformByIdQuery(account.platformId, { skip: !account.platformId });
+    useGetPlatformByIdQuery(account.platform?._id, {
+      skip: !account.platform?._id,
+    });
 
   // Original handlers remain unchanged
   const handleEdit = () => {
@@ -13,6 +17,16 @@ const PlatformAccountItem = ({ account, onEdit, onDelete }) => {
 
   const handleDelete = () => {
     if (onDelete) onDelete(account._id);
+  };
+
+  const handleViewChats = () => {
+    if (account.chatCount > 0) {
+      navigate("/unibox", {
+        state: {
+          platformAccount: account._id,
+        },
+      });
+    }
   };
 
   const getPlatformColorClass = () => {
@@ -94,7 +108,7 @@ const PlatformAccountItem = ({ account, onEdit, onDelete }) => {
       </div>
 
       <div className="mt-3 text-sm text-gray-600">
-        <div className="flex items-center mb-1">
+        {/* <div className="flex items-center mb-1">
           <svg
             className="w-4 h-4 mr-2"
             fill="none"
@@ -115,7 +129,7 @@ const PlatformAccountItem = ({ account, onEdit, onDelete }) => {
               ? new Date(account.lastSync).toLocaleDateString()
               : "Never"}
           </span>
-        </div>
+        </div> */}
 
         <div className="flex items-center">
           <svg
@@ -132,8 +146,16 @@ const PlatformAccountItem = ({ account, onEdit, onDelete }) => {
               d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
             ></path>
           </svg>
-          <span>Chats: {account.chatsCount || 0}</span>
+          <span>Chats: {account.chatCount || 0}</span>
         </div>
+        {account.chatCount > 0 && (
+          <button
+            onClick={handleViewChats}
+            className="text-xs text-blue-600 hover:text-blue-800 underline ml-6"
+          >
+            View Chats
+          </button>
+        )}
       </div>
 
       <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">

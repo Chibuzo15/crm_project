@@ -198,14 +198,14 @@ exports.deleteAccount = async (req, res) => {
       platformAccount: req.params.id,
     });
 
-    if (usedInChats || usedInJobPostings) {
-      // If used, mark as inactive instead of deleting
-      const account = await PlatformAccount.findByIdAndUpdate(
-        req.params.id,
-        { active: false },
-        { new: true }
-      );
+    // If used, mark as inactive instead of deleting
+    const account = await PlatformAccount.findByIdAndUpdate(
+      req.params.id,
+      { active: false },
+      { new: true }
+    );
 
+    if (usedInChats || usedInJobPostings) {
       if (!account) {
         return res.status(404).json({ message: "Account not found" });
       }
@@ -216,8 +216,9 @@ exports.deleteAccount = async (req, res) => {
       });
     }
 
-    // If not used, delete completely
-    const account = await PlatformAccount.findByIdAndDelete(req.params.id);
+    // If not used, mark as deleted
+    account.isDeleted = true;
+    await account.save();
 
     if (!account) {
       return res.status(404).json({ message: "Account not found" });

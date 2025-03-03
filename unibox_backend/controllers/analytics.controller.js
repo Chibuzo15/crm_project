@@ -200,49 +200,140 @@ exports.getDailyActivity = async (req, res) => {
     }
 
     // Add user filter if provided
-    if (userId && userId !== "all") {
-      dateFilter.user = userId;
-    }
+    const userFilter = userId && userId !== "all" ? { user: userId } : {};
+
+    // Aggregate job postings
+    const jobPostingsAggregation = await JobPosting.aggregate([
+      {
+        $match: {
+          datePosted: {
+            $gte: dateFilter.date.$gte,
+            $lte: dateFilter.date.$lte || new Date(),
+          },
+          ...(userFilter.user ? { createdBy: userFilter.user } : {}),
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$datePosted",
+            },
+          },
+          jobPostings: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Aggregate chats for leads and conversions
+    const chatsAggregation = await Chat.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: dateFilter.date.$gte,
+            $lte: dateFilter.date.$lte || new Date(),
+          },
+          ...(userFilter.user ? { createdBy: userFilter.user } : {}),
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+            },
+          },
+          newLeads: { $sum: 1 },
+          conversions: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "converted"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
 
     // Get user activity
-    const userActivity = await UserActivity.find(dateFilter)
+    const userActivity = await UserActivity.find({
+      ...dateFilter,
+      ...userFilter,
+    })
       .sort({ date: 1 })
       .populate("user", "name")
       .lean();
 
-    // Group by date for daily results
-    const dailyResults = userActivity.reduce((acc, activity) => {
+    // Create a results map to combine all metrics
+    const resultsMap = {};
+
+    // Process user activity
+    userActivity.forEach((activity) => {
       const dateString = activity.date.toISOString().split("T")[0];
 
-      if (!acc[dateString]) {
-        acc[dateString] = {
+      if (!resultsMap[dateString]) {
+        resultsMap[dateString] = {
           date: dateString,
           totalMessages: 0,
           messagesOnTime: 0,
           messagesOffTime: 0,
           uniqueChats: new Set(),
-          newLeads: 0,
           userId: activity.user ? activity.user._id : null,
           userName: activity.user ? activity.user.name : null,
+          jobPostings: 0,
+          newLeads: 0,
+          conversions: 0,
         };
       }
 
-      acc[dateString].totalMessages += activity.totalMessages || 0;
-      acc[dateString].messagesOnTime += activity.messagesOnTime || 0;
-      acc[dateString].messagesOffTime += activity.messagesOffTime || 0;
+      resultsMap[dateString].totalMessages += activity.totalMessages || 0;
+      resultsMap[dateString].messagesOnTime += activity.messagesOnTime || 0;
+      resultsMap[dateString].messagesOffTime += activity.messagesOffTime || 0;
 
-      // Add unique chats
       if (activity.chatsInteracted) {
         activity.chatsInteracted.forEach((chatId) => {
-          acc[dateString].uniqueChats.add(chatId.toString());
+          resultsMap[dateString].uniqueChats.add(chatId.toString());
         });
       }
+    });
 
-      return acc;
-    }, {});
+    // Add job postings to results
+    jobPostingsAggregation.forEach((item) => {
+      if (!resultsMap[item._id]) {
+        resultsMap[item._id] = {
+          date: item._id,
+          totalMessages: 0,
+          messagesOnTime: 0,
+          messagesOffTime: 0,
+          uniqueChats: new Set(),
+          jobPostings: 0,
+          newLeads: 0,
+          conversions: 0,
+        };
+      }
+      resultsMap[item._id].jobPostings = item.jobPostings;
+    });
+
+    // Add chats (leads and conversions) to results
+    chatsAggregation.forEach((item) => {
+      if (!resultsMap[item._id]) {
+        resultsMap[item._id] = {
+          date: item._id,
+          totalMessages: 0,
+          messagesOnTime: 0,
+          messagesOffTime: 0,
+          uniqueChats: new Set(),
+          jobPostings: 0,
+          newLeads: 0,
+          conversions: 0,
+        };
+      }
+      resultsMap[item._id].newLeads = item.newLeads;
+      resultsMap[item._id].conversions = item.conversions;
+    });
 
     // Convert to array and calculate additional metrics
-    const results = Object.values(dailyResults).map((day) => ({
+    const results = Object.values(resultsMap).map((day) => ({
       date: day.date,
       totalMessages: day.totalMessages,
       messagesOnTime: day.messagesOnTime,
@@ -254,7 +345,13 @@ exports.getDailyActivity = async (req, res) => {
           : 0,
       userId: day.userId,
       userName: day.userName,
+      jobPostings: day.jobPostings,
+      newLeads: day.newLeads,
+      conversions: day.conversions,
     }));
+
+    // Sort results by date
+    results.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     res.json(results);
   } catch (error) {

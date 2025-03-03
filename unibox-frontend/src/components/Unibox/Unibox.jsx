@@ -87,6 +87,20 @@ const Unibox = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [currentChat, sidebarOpen]);
 
+  // Add useEffect to handle navigation state
+  useEffect(() => {
+    // Check if navigation state contains platformAccount
+    if (location.state?.platformAccount) {
+      setFilters((prev) => ({
+        ...prev,
+        platformAccount: location.state.platformAccount,
+      }));
+
+      // Clear the state to prevent reapplying on subsequent renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   // Handle WebSocket connection
   useEffect(() => {
     socketRef.current = socket;

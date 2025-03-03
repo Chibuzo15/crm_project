@@ -29,7 +29,7 @@ const PlatformAccountsList = () => {
     refetch: refetchAccounts,
     error: accountsError,
   } = useGetPlatformAccountsQuery(
-    selectedPlatformId ? { platformId: selectedPlatformId } : {}
+    selectedPlatformId ? { platform: selectedPlatformId } : {}
   );
 
   // Replace delete thunk with RTK Query mutation
@@ -71,7 +71,8 @@ const PlatformAccountsList = () => {
     if (deleteAccountId) {
       try {
         // Use RTK Query mutation instead of thunk
-        await deleteAccount(deleteAccountId).unwrap();
+        const result = await deleteAccount(deleteAccountId).unwrap();
+        console.log("result ", result);
         setShowDeleteConfirm(false);
         setDeleteAccountId(null);
       } catch (err) {

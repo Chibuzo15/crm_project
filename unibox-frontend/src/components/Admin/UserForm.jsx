@@ -84,6 +84,8 @@ const UserForm = ({ user, onSubmit, onCancel }) => {
       return;
     }
 
+    console.log("userFormData ", userFormData);
+
     try {
       if (userFormMode === "create") {
         // Use RTK Query mutation instead of createUser thunk

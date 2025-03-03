@@ -38,6 +38,10 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -54,6 +58,14 @@ UserSchema.pre("save", async function (next) {
   } catch (error) {
     next(error);
   }
+});
+
+UserSchema.pre("find", function () {
+  this.where({ isDeleted: { $ne: true } });
+});
+
+UserSchema.pre("findOne", function () {
+  this.where({ isDeleted: { $ne: true } });
 });
 
 // Check if password matches

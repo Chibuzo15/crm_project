@@ -11,7 +11,7 @@ const userSlice = createSlice({
     userFormData: {
       name: "",
       email: "",
-      role: "hr",
+      role: "user",
       maxResponseTime: 8,
     },
     userFormErrors: null,
@@ -31,7 +31,7 @@ const userSlice = createSlice({
       state.userFormData = {
         name: "",
         email: "",
-        role: "hr",
+        role: "user",
         maxResponseTime: 8,
       };
       state.userFormErrors = null;

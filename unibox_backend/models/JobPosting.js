@@ -18,6 +18,10 @@ const JobPostingSchema = new mongoose.Schema(
       ref: "PlatformAccount",
       required: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     title: {
       type: String,
       required: true,

@@ -6,18 +6,16 @@ import UserPerformanceChart from "./UserPerformanceChart";
 import DailyResultsChart from "./DailyResultsChart";
 import MetricsCards from "./MetricsCards";
 import "react-datepicker/dist/react-datepicker.css";
+import {
+  useGetDailyActivityQuery,
+  useGetUserActivityQuery,
+  useGetUsersQuery,
+} from "../../store/api";
 
 const ActivityDashboard = () => {
   const dispatch = useDispatch();
-  const {
-    userActivity: realUserActivity,
-    dailyResults,
-    loading,
-    error,
-  } = useSelector((state) => state.analytics);
-  const users = useSelector((state) => state.user.users);
-
-  const userActivity = [];
+  const { error } = useSelector((state) => state.analytics);
+  // const users = useSelector((state) => state.user.users);
 
   const [dateRange, setDateRange] = useState([
     new Date(new Date().setDate(new Date().getDate() - 30)), // 30 days ago
@@ -25,6 +23,29 @@ const ActivityDashboard = () => {
   ]);
   const [startDate, endDate] = dateRange;
   const [selectedUser, setSelectedUser] = useState("all");
+
+  const { data: users, isLoading: usersLoading } = useGetUsersQuery({});
+
+  // Use RTK Query hooks
+  const {
+    data: userActivity = [],
+    isLoading: isLoadingUserActivity,
+    error: userActivityError,
+  } = useGetUserActivityQuery({
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
+    userId: selectedUser !== "all" ? selectedUser : undefined,
+  });
+
+  const {
+    data: dailyResults = [],
+    isLoading: isLoadingDailyResults,
+    error: dailyResultsError,
+  } = useGetDailyActivityQuery({
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
+    userId: selectedUser !== "all" ? selectedUser : undefined,
+  });
 
   useEffect(() => {
     if (startDate && endDate) {
@@ -53,16 +74,14 @@ const ActivityDashboard = () => {
       };
     }
 
-    const totalMessages = 0;
-    //  userActivity?.reduce(
-    //   (sum, day) => sum + day.totalMessages,
-    //   0
-    // );
-    const onTimeMessages = 0;
-    // userActivity?.reduce(
-    //   (sum, day) => sum + day.messagesOnTime,
-    //   0
-    // );
+    const totalMessages = userActivity.reduce(
+      (sum, day) => sum + (day.totalMessages || 0),
+      0
+    );
+    const onTimeMessages = userActivity.reduce(
+      (sum, day) => sum + (day.messagesOnTime || 0),
+      0
+    );
     const onTimePercentage =
       totalMessages > 0
         ? Math.round((onTimeMessages / totalMessages) * 100)
@@ -132,13 +151,15 @@ const ActivityDashboard = () => {
         </div>
       </div>
 
-      {loading ? (
+      {isLoadingUserActivity || isLoadingDailyResults ? (
         <div className="flex justify-center items-center h-64">
           <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
         </div>
-      ) : error ? (
+      ) : userActivityError || dailyResultsError ? (
         <div className="bg-red-50 p-4 rounded-md">
-          <p className="text-red-700">{error}</p>
+          <p className="text-red-700">
+            {userActivityError?.message || dailyResultsError?.message}
+          </p>
         </div>
       ) : (
         <>

@@ -34,6 +34,10 @@ const PlatformAccountSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -42,6 +46,14 @@ const PlatformAccountSchema = new mongoose.Schema(
 PlatformAccountSchema.pre("save", function (next) {
   // Implement encryption for sensitive fields here
   next();
+});
+
+PlatformAccountSchema.pre("find", function () {
+  this.where({ isDeleted: { $ne: true } });
+});
+
+PlatformAccountSchema.pre("findOne", function () {
+  this.where({ isDeleted: { $ne: true } });
 });
 
 const PlatformAccount = mongoose.model(

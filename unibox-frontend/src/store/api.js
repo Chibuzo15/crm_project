@@ -515,6 +515,44 @@ export const api = createApi({
         { type: "Chat", id: chatId },
       ],
     }),
+
+    // User Activity
+    getUserActivity: builder.query({
+      query: ({ startDate, endDate, userId }) => ({
+        url: userId
+          ? `/users/${userId}/activity`
+          : "/analytics/user-performance",
+        params: { startDate, endDate, userId },
+      }),
+      providesTags: ["UserActivity"],
+    }),
+
+    // Job Statistics
+    getJobStats: builder.query({
+      query: ({ startDate, endDate, jobType }) => ({
+        url: "/analytics/job-stats",
+        params: { startDate, endDate, jobType },
+      }),
+      providesTags: ["JobStats"],
+    }),
+
+    // Platform Statistics
+    getPlatformStats: builder.query({
+      query: ({ startDate, endDate }) => ({
+        url: "/analytics/platform-stats",
+        params: { startDate, endDate },
+      }),
+      providesTags: ["PlatformStats"],
+    }),
+
+    // Daily Activity
+    getDailyActivity: builder.query({
+      query: ({ startDate, endDate, userId }) => ({
+        url: "/analytics/daily-activity",
+        params: { startDate, endDate, userId },
+      }),
+      providesTags: ["DailyActivity"],
+    }),
   }),
 });
 
@@ -581,4 +619,10 @@ export const {
   useSendMessageMutation,
   useSendMessageWithAttachmentMutation,
   useMarkMessagesAsReadMutation,
+
+  //Analytics
+  useGetUserActivityQuery,
+  useGetJobStatsQuery,
+  useGetPlatformStatsQuery,
+  useGetDailyActivityQuery,
 } = api;

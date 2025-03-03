@@ -161,21 +161,25 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role === "admin") {
-      return res.status(400).json({ message: "Cannot delete admin accounts" });
-    }
+    // if (user.role === "admin") {
+    //   return res.status(400).json({ message: "Cannot delete admin accounts" });
+    // }
+
+    // If not used, mark as deleted
+    user.isDeleted = true;
+    await user.save();
 
     // Delete user activity data
-    await UserActivity.deleteMany({ user: req.params.id });
+    // await UserActivity.deleteMany({ user: req.params.id });
 
     // Remove user ID from messages (but keep messages)
-    await Message.updateMany(
-      { sender: req.params.id },
-      { $unset: { sender: 1 } }
-    );
+    // await Message.updateMany(
+    //   { sender: req.params.id },
+    //   { $unset: { sender: 1 } }
+    // );
 
     // Delete the user
-    await User.findByIdAndDelete(req.params.id);
+    // await User.findByIdAndDelete(req.params.id);
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {

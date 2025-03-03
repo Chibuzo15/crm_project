@@ -173,6 +173,7 @@ const ChatSidebar = ({ chat, onUpdate }) => {
         >
           <option value="active">Active</option>
           <option value="to archive">To Archive</option>
+          {/* <option value="converted">Converted</option> */}
           <option value="working on poc">Working on POC</option>
           <option value="starred">Starred</option>
           <option value="closed">Closed</option>
