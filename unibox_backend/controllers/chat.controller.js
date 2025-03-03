@@ -16,6 +16,9 @@ exports.getChats = async (req, res) => {
       status,
       followUp,
       jobPosting,
+      pendingReplies,
+      followUpStartDate,
+      followUpEndDate,
       limit = 50,
       skip = 0,
     } = req.query;
@@ -52,8 +55,25 @@ exports.getChats = async (req, res) => {
       filter.followUpDate = { $lte: new Date() };
     }
 
+    // Pending replies filter (unread messages)
+    if (pendingReplies === "true") {
+      filter.unreadCount = { $gt: 0 };
+    }
+
     if (jobPosting && jobPosting.trim() !== "") {
       filter.jobPosting = new mongoose.Types.ObjectId(jobPosting);
+    }
+
+    // Follow-up date range filter
+    if (followUpStartDate && followUpEndDate) {
+      filter.followUpDate = {
+        $gte: new Date(followUpStartDate),
+        $lte: new Date(followUpEndDate),
+      };
+    } else if (followUpStartDate) {
+      filter.followUpDate = { $gte: new Date(followUpStartDate) };
+    } else if (followUpEndDate) {
+      filter.followUpDate = { $lte: new Date(followUpEndDate) };
     }
 
     // Get chats with populated references and latest message

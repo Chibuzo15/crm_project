@@ -478,7 +478,7 @@ exports.syncUpworkJobProposal = async (req, res) => {
     const chat = new Chat({
       platform: platform._id,
       platformAccount: accountId,
-      jobPostingId: jobPosting._id,
+      jobPosting: jobPosting._id,
       jobType: jobPosting.jobType._id,
       createdAt: new Date(),
       lastMessageDate: candidate.date || new Date(),

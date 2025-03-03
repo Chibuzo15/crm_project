@@ -8,7 +8,7 @@ import {
   useSendMessageWithAttachmentMutation,
 } from "../../store/api";
 
-const ChatDetail = ({ chat, socket }) => {
+const ChatDetail = ({ chat, socket, onUpdateChat }) => {
   const messagesEndRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
 
@@ -115,7 +115,7 @@ const ChatDetail = ({ chat, socket }) => {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <ChatHeader chat={chat} />
+      <ChatHeader onUpdateChat={onUpdateChat} chat={chat} />
 
       <div className="flex-1 overflow-hidden bg-gray-50">
         <MessageList

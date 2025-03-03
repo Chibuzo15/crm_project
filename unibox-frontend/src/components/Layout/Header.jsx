@@ -132,12 +132,12 @@ const Header = ({ onMenuToggle }) => {
                 >
                   Your Profile
                 </a>
-                <a
+                {/* <a
                   href="/settings"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Settings
-                </a>
+                </a> */}
               </div>
               <div className="py-1">
                 <button

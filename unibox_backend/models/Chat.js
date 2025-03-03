@@ -56,11 +56,16 @@ const ChatSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Calculate follow-up date when last message date changes
+// Calculate follow-up date when last message date or follow-up interval changes
 ChatSchema.pre("save", function (next) {
-  if (this.isModified("lastMessageDate") && this.lastMessageDate) {
+  // Check if either lastMessageDate or followUpInterval is modified
+  if (
+    (this.isModified("lastMessageDate") ||
+      this.isModified("followUpInterval")) &&
+    this.lastMessageDate
+  ) {
     const followUpDate = new Date(this.lastMessageDate);
-    followUpDate.setDate(followUpDate.getDate() + this.followUpInterval);
+    followUpDate.setDate(followUpDate.getDate() + (this.followUpInterval || 2));
     this.followUpDate = followUpDate;
   }
   next();

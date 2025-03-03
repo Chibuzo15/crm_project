@@ -312,7 +312,7 @@ const Sidebar = ({ collapsed }) => {
                   )}
                 </NavLink>
 
-                <NavLink
+                {/* <NavLink
                   to="/admin/settings"
                   className={({ isActive }) =>
                     `flex items-center px-4 py-2 text-sm rounded-md ${
@@ -346,7 +346,7 @@ const Sidebar = ({ collapsed }) => {
                   ) : (
                     <span>Settings</span>
                   )}
-                </NavLink>
+                </NavLink> */}
               </div>
             )}
           </div>

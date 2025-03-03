@@ -3,7 +3,11 @@ import {
   useGetJobTypesQuery,
   useGetPlatformsQuery,
   useGetPlatformAccountsQuery,
+  useGetJobPostingsQuery,
 } from "../../store/api";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const Filters = ({ filters, onFilterChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -13,6 +17,7 @@ const Filters = ({ filters, onFilterChange }) => {
   const { data: jobTypes = [] } = useGetJobTypesQuery();
   const { data: platforms = [] } = useGetPlatformsQuery();
   const { data: platformAccounts = [] } = useGetPlatformAccountsQuery({});
+  const { data: jobPostings = [] } = useGetJobPostingsQuery({});
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -50,7 +55,7 @@ const Filters = ({ filters, onFilterChange }) => {
 
       {/* Expandable filters with animation and overlay */}
       <div
-        className={`absolute left-0 right-0 bg-white border-b border-gray-200 shadow-md z-10 transition-all duration-300 ease-in-out
+        className={`absolute left-0 right-0 bg-white border-b border-gray-200 shadow-md z-10 transition-all duration-300 ease-in-out  overflow-y-auto
         ${
           isExpanded
             ? "max-h-[400px] opacity-100"
@@ -148,12 +153,103 @@ const Filters = ({ filters, onFilterChange }) => {
               className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Statuses</option>
+              <option value="new">New</option>
               <option value="active">Active</option>
               <option value="to archive">To Archive</option>
               <option value="working on poc">Working on POC</option>
               <option value="starred">Starred</option>
               <option value="closed">Closed</option>
             </select>
+          </div>
+
+          {/* Job Posting filter  */}
+          <div>
+            <label
+              htmlFor="jobPosting-filter"
+              className="block text-xs font-medium text-gray-500 mb-1"
+            >
+              Job Posting
+            </label>
+            <select
+              id="jobPosting-filter"
+              value={filters.jobPosting}
+              onChange={(e) => onFilterChange("jobPosting", e.target.value)}
+              className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Job Postings</option>
+              {jobPostings.map((posting) => (
+                <option key={posting._id} value={posting._id}>
+                  {posting.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Follow-up Date Range filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              Follow-up Date Range
+            </label>
+            <div className="flex space-x-2">
+              <div className="flex-1">
+                <DatePicker
+                  selected={
+                    filters.followUpStartDate
+                      ? new Date(filters.followUpStartDate)
+                      : null
+                  }
+                  onChange={(date) =>
+                    onFilterChange(
+                      "followUpStartDate",
+                      date ? date.toISOString() : ""
+                    )
+                  }
+                  placeholderText="Start Date"
+                  className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+              <div className="flex-1">
+                <DatePicker
+                  selected={
+                    filters.followUpEndDate
+                      ? new Date(filters.followUpEndDate)
+                      : null
+                  }
+                  onChange={(date) =>
+                    onFilterChange(
+                      "followUpEndDate",
+                      date ? date.toISOString() : ""
+                    )
+                  }
+                  placeholderText="End Date"
+                  className="w-full text-sm rounded-md border border-gray-300 shadow-sm p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  dateFormat="yyyy-MM-dd"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Replies filter */}
+          <div className="flex items-center">
+            <input
+              id="pendingReplies-filter"
+              type="checkbox"
+              checked={filters.pendingReplies === "true"}
+              onChange={(e) =>
+                onFilterChange(
+                  "pendingReplies",
+                  e.target.checked ? "true" : "false"
+                )
+              }
+              className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <label
+              htmlFor="pendingReplies-filter"
+              className="ml-2 block text-sm text-gray-700"
+            >
+              Pending Replies
+            </label>
           </div>
 
           {/* Follow Up filter */}
@@ -242,11 +338,63 @@ const Filters = ({ filters, onFilterChange }) => {
           </div>
         )}
 
+        {filters.jobPosting && (
+          <div className="inline-flex items-center bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            {jobPostings.find((p) => p._id === filters.jobPosting)?.title ||
+              "Job Posting"}
+            <button
+              onClick={() => onFilterChange("jobPosting", "")}
+              className="ml-1.5 text-teal-700 hover:text-teal-900"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
+        {filters.pendingReplies === "true" && (
+          <div className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded">
+            Pending Replies
+            <button
+              onClick={() => onFilterChange("pendingReplies", "false")}
+              className="ml-1.5 text-orange-700 hover:text-orange-900"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
+        {(filters.followUpStartDate || filters.followUpEndDate) && (
+          <div className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded mt-2">
+            Follow-up:{" "}
+            {filters.followUpStartDate
+              ? `From ${new Date(
+                  filters.followUpStartDate
+                ).toLocaleDateString()}`
+              : ""}
+            {filters.followUpEndDate
+              ? ` To ${new Date(filters.followUpEndDate).toLocaleDateString()}`
+              : ""}
+            <button
+              onClick={() => {
+                onFilterChange("followUpStartDate", "");
+                onFilterChange("followUpEndDate", "");
+              }}
+              className="ml-1.5 text-green-700 hover:text-green-900"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
         {(filters.platform ||
           filters.platformAccount ||
           filters.jobType ||
           filters.status ||
-          filters.followUp === "true") && (
+          filters.followUpStartDate ||
+          filters.followUpEndDate ||
+          filters.followUp === "true" ||
+          filters.jobPosting ||
+          filters.pendingReplies === "true") && (
           <button
             onClick={() => {
               onFilterChange("platform", "");
@@ -254,6 +402,10 @@ const Filters = ({ filters, onFilterChange }) => {
               onFilterChange("jobType", "");
               onFilterChange("status", "");
               onFilterChange("followUp", "false");
+              onFilterChange("followUpStartDate", "");
+              onFilterChange("followUpEndDate", "");
+              onFilterChange("jobPosting", "");
+              onFilterChange("pendingReplies", "false");
             }}
             className="text-xs text-gray-500 hover:text-gray-700 underline ml-1"
           >

@@ -253,6 +253,7 @@ const Unibox = () => {
       <div className="flex-1 flex">
         {currentChat ? (
           <ChatDetail
+            onUpdateChat={handleChatUpdate}
             chat={currentChat}
             socket={socketRef.current}
             // onSendMessage={handleSendMessage}
