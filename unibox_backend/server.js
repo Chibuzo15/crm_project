@@ -39,7 +39,7 @@ const CORS_OPTS = {
     "http://localhost:5173",
     "http://localhost:5174",
   ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 };
 
@@ -91,13 +91,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+app.options("*", cors(CORS_OPTS));
+
 // Static folder for uploads
 app.use(
   "/uploads",
   (req, res, next) => {
     // Add CORS headers specifically for uploads
     res.header("Access-Control-Allow-Origin", CORS_OPTS.origin);
-    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.header("Cross-Origin-Resource-Policy", "cross-origin");
     next();
   },
